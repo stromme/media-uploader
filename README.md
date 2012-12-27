@@ -1,11 +1,11 @@
-#Upload plugin
+# Upload-media plugin
 
-Opens access to the Wordpress media handling within a theme.
+Use the WP media manager inside a theme to upload images to a users blog.
 
 ## Usage
 
-Ideal usage would be to be able to attach image-upload capability to any button. Ex `<button type='file' data-target='HTMLelementID' data-template='showroom'>`
-
+Attach image-upload capability to any button within a theme. Ex `<button type='file' data-target='HTMLelementID' data-template='showroom'>`
+ 
 ## User Experience
 
 On clicking the button the file browser will open for selecting the photo to upload. On mobile browsers and It would open the 'add photo' dialogue. This is the exact same functionality as clicking the 'select files' button in the WP media uploader. 
@@ -28,7 +28,7 @@ An HTML template for the newly added images is specified by the data-template va
 		<div class="thumb-favorite" rel="tooltip" data-placement="top" title="Mark the photo as your favorite, this will be shown first."><i class="icon-ok icon-white"></i></div>
 		<div class="thumb-trash"><i class="icon-trash"></i></div>
 	</a>
-</li>```
+</li>`
 
 Template should be loaded if possible using the WP function get_template_part(). 
 
