@@ -22,13 +22,15 @@ Uploading will take place using native WP functions, including the WP FLASH/HTML
 
 An HTML template for the newly added images is specified by the data-template value. ex. 
 
-`<li>
+```
+<li>
 	<a href="#" class="thumbnail">
 		<img src="uploaded_image.png" id="post_attachement_id">
 		<div class="thumb-favorite" rel="tooltip" data-placement="top" title="Mark the photo as your favorite, this will be shown first."><i class="icon-ok icon-white"></i></div>
 		<div class="thumb-trash"><i class="icon-trash"></i></div>
 	</a>
-</li>`
+</li>
+```
 
 Template should be loaded if possible using the WP function get_template_part(). 
 
