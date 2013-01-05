@@ -50,9 +50,9 @@ Template should be loaded if possible using the WP function get_template_part().
 
 # Upgrades Roadmap
 
-## Use HTML5 Canvas when available to resize image before upload to reduce file upload time.
+* Use HTML5 Canvas when available to resize image before upload to reduce file upload time.
 
-## Immediately after user selects a photo to upload, a modal opens with the photo to allow for custom cropping. Same style as WP native custom cropping used on WP header image wp-admin page.
+* Immediately after user selects a photo to upload, a modal opens with the photo to allow for custom cropping. Same style as WP native custom cropping used on WP header image wp-admin page.
 
 # Resources
 
