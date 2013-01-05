@@ -45,7 +45,9 @@ Template should be loaded if possible using the WP function get_template_part().
 ## Validation
 
 ** File Size: ** Max file size currently set in php.ini to 5MB.
+
 ** Dimensions: ** Image must be minimum the width/height of the wp image size "banner".
+
 ** Formats: **  Only allow uploading of standard image file formats. No video uploads.
 
 # Upgrades Roadmap
