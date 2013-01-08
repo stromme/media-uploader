@@ -21,22 +21,22 @@ class The_Media_Uploader {
   static $default_max_height = 1200;
   static $default_image_quality = 100;
 
-	/* Plugin Construction */
-	function __construct() {
+  /* Plugin Construction */
+  function __construct() {
     add_shortcode("media-uploader", array($this,"media_uploader_shortcode"));
     add_action('template_redirect', array($this, 'action_load_dependencies'));
     add_action('admin_menu', array($this, 'action_admin_menu'));
     add_action('wp_ajax_plupload_action', array($this, 'g_plupload_action'));
-	}
+  }
 
   /**
-	 * Load all required files for the plugin to run.
-	 *
-	 * @uses wp_enqueue_script, plugins_url, add_action, get_option, wp_localize_script, wp_enqueue_style, includes_url
-	 * @action template_redirect
-	 * @return null
-	 */
-	function action_load_dependencies() {
+   * Load all required files for the plugin to run.
+   *
+   * @uses wp_enqueue_script, plugins_url, add_action, get_option, wp_localize_script, wp_enqueue_style, includes_url
+   * @action template_redirect
+   * @return null
+   */
+  function action_load_dependencies() {
     wp_enqueue_script('the-media-uploader', plugins_url('mediauploader.js', __FILE__), array('jquery','plupload-all'), '20121205');
     $settings = get_option('mediauploader_settings');
     if(!$settings){
@@ -81,12 +81,12 @@ class The_Media_Uploader {
   }
 
   /**
-	 * Saving current uploaded image into upload directory and add as attachment into library
-	 *
-	 * @uses wp_handle_upload, wp_generate_attachment_metadata, wp_update_attachment_metadata, get_attachment_link, wp_get_attachment_thumb_url
-	 * @action wp_upload
-	 * @return null
-	 */
+   * Saving current uploaded image into upload directory and add as attachment into library
+   *
+   * @uses wp_handle_upload, wp_generate_attachment_metadata, wp_update_attachment_metadata, get_attachment_link, wp_get_attachment_thumb_url
+   * @action wp_ajax_plupload_action
+   * @return null
+   */
   function g_plupload_action() {
     $imgid = $_POST["img_id"];
     $postid = $_POST["post_id"];
