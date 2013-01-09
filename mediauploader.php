@@ -37,7 +37,8 @@ class The_Media_Uploader {
    * @return null
    */
   function action_load_dependencies() {
-    wp_enqueue_script('the-media-uploader', plugins_url('mediauploader.js', __FILE__), array('jquery','plupload-all'), '20121205');
+    wp_enqueue_script('the-media-uploader-spinner', plugins_url('spinner.min.js', __FILE__), array('jquery'), '20121205');
+    wp_enqueue_script('the-media-uploader', plugins_url('mediauploader.js', __FILE__), array('plupload-all'), '20121205');
     $settings = get_option('mediauploader_settings');
     if(!$settings){
       $settings = array(
@@ -47,6 +48,7 @@ class The_Media_Uploader {
         "image_quality"=>self::$default_image_quality
       );
     }
+
     // Default settings for plupload
     $plupload_init = array(
       'runtimes' => 'html5,flash,html4,silverlight',
@@ -59,7 +61,7 @@ class The_Media_Uploader {
       'url' => admin_url('admin-ajax.php'),
       'flash_swf_url' => includes_url('js/plupload/plupload.flash.swf'),
       'silverlight_xap_url' => includes_url('js/plupload/plupload.silverlight.xap'),
-      'filters' => array(array('title' => __('Images'), 'extensions' => 'jpg, jpeg, png')),
+      'filters' => array(array('title' => __('Image Files'), 'extensions' => "jpg,png,jpeg,gif")),
       'multipart' => true,
       'urlstream_upload' => true,
       'multi_selection' => false,
@@ -88,14 +90,19 @@ class The_Media_Uploader {
    * @return null
    */
   function g_plupload_action() {
+    // Globalize variable tobe able to access in the template
+    global $attachment_id, $attachment_link, $attachment_thumb;
+
     $imgid = $_POST["img_id"];
     $postid = $_POST["post_id"];
+    $template = $_POST["template"];
 
     // Handle file upload
-    $status = wp_handle_upload($_FILES[$imgid . '_image'], array('test_form' => true, 'action' => 'plupload_action'));
+    $status = wp_handle_upload($_FILES['file_'.$imgid], array('test_form' => true, 'action' => 'plupload_action'));
+    $status["status_code"] = 0;
 
     // If status is containing minimum 3 parameter: url, uri, and type
-    if(count($status)>1){
+    if(count($status)>2){
       $image = $status["url"];
       $wp_upload_dir = wp_upload_dir(); // Get the wp upload dir
       $file = basename($image); // Grab just filename
@@ -113,11 +120,18 @@ class The_Media_Uploader {
       require_once(ABSPATH."wp-admin".'/includes/image.php');
       $attach_data = wp_generate_attachment_metadata($attach_id, $path);
       wp_update_attachment_metadata($attach_id,$attach_data);
-      $status["attachment_id"] = $attach_id;
       // Get permalink (in case needed), this also creates many file with various sizes
-      $status["attachment_link"] = get_attachment_link($attach_id);
-      $status["attachment_thumb"] = wp_get_attachment_thumb_url($attach_id); // Get thumbnail url
-      $status["post_id"] = $postid;
+      $attachment_id = $attach_id;
+      $attachment_link = get_attachment_link($attach_id);
+      $attachment_thumb = wp_get_attachment_thumb_url($attach_id); // Get thumbnail url
+      // Redirect echo into string
+      ob_start();
+      // Load those variables into our template
+      load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', true);
+      $string = ob_get_contents();
+      ob_end_clean();
+      $status["status_code"] = 1;
+      $status["html"] = $string;
 
       //DESTROY ALL THE THINGS
       unset($attach_id, $attach_data, $attachment_data, $file, $path, $wp_filetype);
@@ -220,15 +234,39 @@ class The_Media_Uploader {
    * @return shortcode string
    */
   function media_uploader_shortcode($atts){
+    global $attachment_id, $attachment_link, $attachment_thumb;
+    
     $string = 'You must login wordpress to see this code running. <a href="/wpmulti/wp-admin">Here</a>';
     if(is_user_logged_in()){
       $string = "<p>";
       $string .=
-        "<button type='button' id='photo-add' class='btn add-media' type='file' ".
+        "<button type='button' id='photo-add-".$atts["target"]."' class='btn add-media' type='file' ".
         "data-post-id='".$atts["post"]."' ".
         "data-target-id='".$atts["target"]."' ".
         "data-template='".$atts["template"]."'><i class=\"icon-camera\"></i>Add photo</button>".
-        "<ul id=\"".$atts["target"]."\" class=\"media_container\"></ul>";
+        "<ul id=\"".$atts["target"]."\" class=\"thumbnails media-thumbnails\">";
+      // Load post attachment, for debugging purposes
+      $args = array(
+        'post_type' => 'attachment',
+        'numberposts' => 9,
+        'post_status' => null,
+        'post_parent' => $atts["post"]
+      );
+      $attachments = get_posts($args);
+      if ($attachments) {
+        foreach ($attachments as $attachment) {
+          // FIlls variable content
+          $attachment_id = $attachment->ID;
+          $attachment_link = get_attachment_link($attachment->ID);
+          $attachment_thumb = wp_get_attachment_thumb_url($attachment->ID);
+          // Redirect echo into string
+          ob_start();
+          load_template(plugin_dir_path(__FILE__).'templates/'.$atts["template"].'.php', false);
+          $string .= ob_get_contents();
+          ob_end_clean();
+        }
+      }
+      $string .= "</ul>";
       $string .= "</p>";
     }
     return $string;
