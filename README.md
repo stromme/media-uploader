@@ -69,7 +69,7 @@ Settings that can be updated are:
 
 * Wordpress will automatically creates various sizes (wp specified sizes) of the uploaded images
 
- # Upgrades Roadmap
+# Upgrades Roadmap
 
 * Immediately after user selects a photo to upload, a modal opens with the photo to allow for custom cropping. Same style as WP native custom cropping used on WP header image wp-admin page.
 
