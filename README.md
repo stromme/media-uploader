@@ -44,15 +44,32 @@ Template should be loaded if possible using the WP function get_template_part().
 
 ## Validation
 
-** File Size: ** Max file size currently set in php.ini to 5MB.
+** File Size: ** Will be determined in the setting, default is 5MB.
 
-** Dimensions: ** Image must be minimum the width/height of the wp image size "banner".
+** Dimensions: ** Image must be minimum the width/height of the wp specified image size.
 
 ** Formats: **  Only allow uploading of standard image file formats. No video uploads.
 
-# Upgrades Roadmap
+## Settings
 
-* Use HTML5 Canvas when available to resize image before upload to reduce file upload time.
+Settings can be accessed from the site `Settings-> Media Uploader` menu.
+
+Settings that can be updated are:
+
+* Maximum upload size (in Bytes)
+
+* Maximum image resolution when uploading (width and height)
+
+* Image quality when resizing
+
+
+# Features
+
+* Large images will be resized locally before uploading (maximum 1200x1200 pixels)
+
+* Wordpress will automatically creates various sizes (wp specified sizes) of the uploaded images
+
+ # Upgrades Roadmap
 
 * Immediately after user selects a photo to upload, a modal opens with the photo to allow for custom cropping. Same style as WP native custom cropping used on WP header image wp-admin page.
 

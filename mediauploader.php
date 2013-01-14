@@ -21,6 +21,12 @@ class The_Media_Uploader {
   static $default_max_height = 1200;
   static $default_image_quality = 100;
 
+  // To initialize the class without global variable
+  public static function init(){
+    $class = __CLASS__;
+    new $class;
+  }
+
   /* Plugin Construction */
   function __construct() {
     add_shortcode("media-uploader", array($this,"media_uploader_shortcode"));
@@ -276,7 +282,4 @@ class The_Media_Uploader {
 /**
  * Initialize The_Media_Uploader
  */
-function the_media_uploader_init(){
-	new The_Media_Uploader;
-}
-add_action('init', 'the_media_uploader_init');
+add_action( 'plugins_loaded', array( 'The_Media_Uploader', 'init' ));
