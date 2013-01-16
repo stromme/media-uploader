@@ -284,35 +284,89 @@ class The_Media_Uploader {
   }
 
   function add_video_callback(){
-    $status_code = 1;
+    global $attachment_id, $attachment_link, $attachment_thumb, $media_type;
     $video_link = $_POST['video_link'];
-    $status_message = $video_link;
+    $template = $_POST['template'];
+    $valid = true;
+    $html = '';
 
-    die(json_encode(array('status'=>$status_code,'status_message'=>$status_message)));
-  }
+    // Checks for any YouTube URL. After http(s) support a or v for Youtube Lyte and v or vh for Smart Youtube plugin
+		if ( !isset( $matches[1] ) ) {
+			preg_match( '#(?:https?(?:a|vh?)?://)?(?:www\.)?youtube(?:\-nocookie)?\.com/watch\?.*v=([A-Za-z0-9\-_]+)#', $video_link, $matches );
+		}
+		// Checks for any shortened youtu.be URL. After http(s) a or v for Youtube Lyte and v or vh for Smart Youtube plugin
+		if ( !isset( $matches[1] ) ) {
+			preg_match( '#(?:https?(?:a|vh?)?://)?youtu\.be/([A-Za-z0-9\-_]+)#', $video_link, $matches );
+		}
 
-  function delete_media_callback(){
-    $status_code = 1;
-    $status_message = '';
-    $media_id = $_POST['media_id'];
-    $media_type = $_POST['media_type'];
+    $video_thumbnail = 'http://img.youtube.com/vi/0/0.jpg';
+    if(isset($matches[1])){
+			$video_thumbnail = 'http://img.youtube.com/vi/' . $matches[1] . '/0.jpg';
+    }
+    else {
+      $valid = false;
+    }
 
-    if($media_type=='photo'){
-      $delete_status = wp_delete_attachment($media_id, true);
-      if($delete_status){
+    if($valid){
+      // Create post object
+      $post_data = array(
+        'post_title'    => $video_link,
+        'post_content'  => '',
+        'post_excerpt'  => '',
+        'post_status'   => 'publish',
+        'post_type'   => 'videos',
+        'post_author'   => 1,
+        'post_category' => array()
+      );
+      // Insert the post into the database
+      $post_id = wp_insert_post($post_data);
+
+      // FIlls variable content
+      if($post_id>0){
+        add_post_meta($post_id, 'video_thumbnail', $video_thumbnail);
+        $attachment_id = $post_id;
+        $attachment_link = '';
+        $attachment_thumb = $video_thumbnail;
+        $media_type = 'video';
+        // Redirect echo into string
+        ob_start();
+        load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
+        $html = ob_get_contents();
+        ob_end_clean();
         $status_code = 1;
-        $status_message = "Successfully deleting photo";
+        $status_message = 'Successfully adding new video';
       }
       else {
         $status_code = 0;
-        $status_message = "Failed to delete photo";
+        $status_message = 'Failed to add video';
       }
     }
+    else {
+      $status_code = 0;
+      $status_message = 'Please add a valid video link';
+    }
+
+    die(json_encode(array('status'=>$status_code,'status_message'=>$status_message, 'html'=>$html, 'thumbnail'=>json_encode($intermediate))));
+  }
+
+  function delete_media_callback(){
+    $media_id = $_POST['media_id'];
+    $media_type = $_POST['media_type'];
+    $delete_status = 0;
+
+    if($media_type=='photo'){
+      $delete_status = wp_delete_attachment($media_id, true);
+    }
     else if($media_type=='video'){
+      $delete_status = wp_delete_post($media_id, true);
+    }
+    if($delete_status){
       $status_code = 1;
-      $status_message = "Media type is video";
-      // Delete the attachment,
-      // Delete the post
+      $status_message = "Successfully deleting ".$media_type;
+    }
+    else {
+      $status_code = 0;
+      $status_message = "Failed to delete photo".$media_type;
     }
     die(json_encode(array('status'=>$status_code,'status_message'=>$status_message)));
   }
@@ -323,31 +377,60 @@ class The_Media_Uploader {
     $media_caption = $_POST['media_caption'];
     $media_description = $_POST['media_description'];
 
-    if($media_type=='photo'){
-      // Already done
-    }
-    else if($media_type=='video'){
-      // Get the post attachment
-      // Update the attachment caption and desc
-    }
-
     // Update attachment data
-    $attachment = array();
-    $attachment['ID'] = $media_id;
-    $attachment['post_excerpt'] = $media_caption;
-    $attachment['post_content'] = $media_description;
+    $post = array();
+    $post['ID'] = $media_id;
+    $post['post_excerpt'] = $media_caption;
+    $post['post_content'] = $media_description;
     // Update the attachment into the database
-    $update_status = wp_update_post($attachment);
+    $update_status = wp_update_post($post);
     if($update_status){
         $status_code = 1;
-        $status_message = "Successfully updating media tag";
+        $status_message = "Successfully updating ".$media_type." tag";
     }
     else {
       $status_code = 0;
-      $status_message = "Failed to update media tag";
+      $status_message = "Failed to update ".$media_type." tag";
     }
 
     die(json_encode(array('status'=>$status_code,'status_message'=>$status_message)));
+  }
+
+  public function media_manage_list_media($template){
+    global $attachment_link, $attachment_thumb, $attachment_id, $media_type;
+    $html = '';
+    $args = array(
+      'post_type' => array('attachment', 'videos'),
+      'numberposts' => 100,
+      'post_status' => 'any',
+      'post_parent' => 0
+    );
+    $posts = get_posts($args);
+
+    if ($posts) {
+      foreach ($posts as $post) {
+        // FIlls variable content
+        $attachment_id = $post->ID;
+        if($post->post_type=='attachment'){
+          $attachment_link = get_attachment_link($post->ID);
+          $attachment_thumb = wp_get_attachment_thumb_url($post->ID);
+          $media_type = 'photo';
+        }
+        else {
+          $attachment_link = get_post_permalink($post->ID);
+          $video_thumbnail = get_post_meta($post->ID, 'video_thumbnail', true);
+          $attachment_thumb = $video_thumbnail;
+          $media_type = 'video';
+        }
+        // Redirect echo into string
+        ob_start();
+        load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
+        $html .= ob_get_contents();
+        ob_end_clean();
+      }
+    }
+
+    return $html;
   }
 };
 

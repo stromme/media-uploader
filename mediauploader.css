@@ -24,8 +24,14 @@
   margin-top: 5px;
 }
 
-#media-tag-loader {
+.button-side-loader {
   display: inline-block;
   padding: 4px 0;
+  width: 40px;
+}
+
+.field-side-loader {
+  display: inline-block;
+  padding: 14px 5px 0 5px;
   width: 40px;
 }

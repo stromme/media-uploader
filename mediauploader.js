@@ -39,7 +39,7 @@ $.fn.mediauploader = function(options) {
         // When a file was added in the queue
         uploader.bind('FilesAdded', function(up, files){
           $.each(files, function(i, file) {
-            target.append('<li class="new_thumb_'+file.id+'"><a><span class="loader"></span></a></li>');
+            target.prepend('<li class="new_thumb_'+file.id+'"><a><span class="loader"></span></a></li>');
             $('.new_thumb_'+file.id+' .loader', target).spin('medium-left', '#000000');
           });
           up.refresh();
@@ -86,7 +86,7 @@ $.fn.mediauploader = function(options) {
  * Ready, set, go!
  */
 $( document ).ready( function() {
-  $('button.add-media[data-target-id],input[type="button"].add-media[data-target-id]').mediauploader();
+  $('button.add-media,input[type="button"].add-media').filter(function(){return !$(this).hasClass('add-video');}).mediauploader();
 });
 
 })(jQuery);
@@ -99,14 +99,26 @@ function bootstrap_alert(message, alert_type){
   });
 }
 
-function add_video(video_link, callback){
+function show_add_video_spinner(){
+  $('<span id="mailboxes-addvideo-loader" class="field-side-loader"><span class="loader"></span></span>').insertAfter(".action-add-video");
+  $('#mailboxes-addvideo-loader .loader').spin('medium-left', '#000000');
+  $('#mailboxes-addvideo-loader').fadeIn(300);
+}
+
+function add_video(video_link, data_target, data_template, callback){
   if(video_link && video_link.length>0){
     var data = {
       action: 'add_video',
-      'video_link': video_link
+      'video_link': video_link,
+      'template': data_template
     };
+    var target = $('#'+data_target);
+    target.prepend('<li class="new_thumb_video"><a><span class="loader"></span></a></li>');
+    $('.new_thumb_video .loader', target).spin('medium-left', '#000000');
     $.post(ajaxurl, data, function(response) {
       var json_response = JSON.parse(response);
+      console.log($('li.new_thumb_video', target)[0]);
+      $('li.new_thumb_video', target).replaceWith(json_response.html);
       if(json_response.status==1){
         bootstrap_alert(json_response.status_message, 'success');
         if(typeof(callback)=='function') callback();
@@ -121,29 +133,40 @@ function add_video(video_link, callback){
   }
 }
 
-function confirm_delete_media(media_id, media_type){
+function show_delete_media_spinner(){
+  $("#confirm-delete-media").parent().prepend('<span id="mailboxes-deletemedia-loader" class="button-side-loader"><span class="loader"></span></span>');
+  $('#mailboxes-deletemedia-loader .loader').spin('medium-left', '#000000');
+  $('#mailboxes-deletemedia-loader').fadeIn(300);
+}
+
+function confirm_delete_media(media_id, media_type, callback){
   var data = {
     action: 'delete_media',
     'media_id': media_id,
     'media_type': media_type
   };
+  show_delete_media_spinner();
   $.post(ajaxurl, data, function(response) {
     var json_response = JSON.parse(response);
-    if(json_response.status==1){
-      var thumb = $("#media-container li").filter(function(){
-        return $('.media-id', this).val()==media_id;
-      });
-      thumb.fadeOut(300, function(){$(this).remove();});
-      bootstrap_alert(json_response.status_message, 'success');
-    }
-    else {
-      bootstrap_alert(json_response.status_message, 'error');
-    }
+    $('#mailboxes-deletemedia-loader').fadeOut(300, function(){
+      $(this).remove();
+      if(json_response.status==1){
+        var thumb = $("#media-container li").filter(function(){
+          return $('.media-id', this).val()==media_id;
+        });
+        thumb.fadeOut(300, function(){$(this).remove();});
+        bootstrap_alert(json_response.status_message, 'success');
+        if(typeof(callback)=='function') callback();
+      }
+      else {
+        bootstrap_alert(json_response.status_message, 'error');
+      }
+    });
   });
 }
 
 function show_media_tag_spinner(){
-  $("#confirm-tag").parent().prepend('<span id="media-tag-loader"><span class="loader"></span></span>');
+  $("#confirm-tag").parent().prepend('<span id="media-tag-loader" class="button-side-loader"><span class="loader"></span></span>');
   $('#media-tag-loader .loader').spin('medium-left', '#000000');
   $('#media-tag-loader').fadeIn(300);
 }
@@ -174,7 +197,6 @@ function confirm_tag_media(media_id, media_type, media_caption_elm, media_descri
         $(this).remove();
         if(json_response.status==1){
           bootstrap_alert(json_response.status_message, 'success');
-          console.log(json_response.status_message);
           // Reset the form
           media_caption_elm.val('');
           media_description_elm.val('');
