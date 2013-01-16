@@ -33,6 +33,9 @@ class The_Media_Uploader {
     add_action('template_redirect', array($this, 'action_load_dependencies'));
     add_action('admin_menu', array($this, 'action_admin_menu'));
     add_action('wp_ajax_plupload_action', array($this, 'g_plupload_action'));
+    add_action('wp_ajax_delete_media', array($this, 'delete_media_callback'));
+    add_action('wp_ajax_tag_media', array($this, 'tag_media_callback'));
+    add_action('wp_ajax_add_video', array($this, 'add_video_callback'));
   }
 
   /**
@@ -97,11 +100,12 @@ class The_Media_Uploader {
    */
   function g_plupload_action() {
     // Globalize variable tobe able to access in the template
-    global $attachment_id, $attachment_link, $attachment_thumb;
+    global $attachment_id, $attachment_link, $attachment_thumb, $media_type;
 
     $imgid = $_POST["img_id"];
     $postid = $_POST["post_id"];
     $template = $_POST["template"];
+    if($postid=='') $postid=0;
 
     // Handle file upload
     $status = wp_handle_upload($_FILES['file_'.$imgid], array('test_form' => true, 'action' => 'plupload_action'));
@@ -130,6 +134,7 @@ class The_Media_Uploader {
       $attachment_id = $attach_id;
       $attachment_link = get_attachment_link($attach_id);
       $attachment_thumb = wp_get_attachment_thumb_url($attach_id); // Get thumbnail url
+      $media_type = "photo";
       // Redirect echo into string
       ob_start();
       // Load those variables into our template
@@ -277,9 +282,76 @@ class The_Media_Uploader {
     }
     return $string;
   }
+
+  function add_video_callback(){
+    $status_code = 1;
+    $video_link = $_POST['video_link'];
+    $status_message = $video_link;
+
+    die(json_encode(array('status'=>$status_code,'status_message'=>$status_message)));
+  }
+
+  function delete_media_callback(){
+    $status_code = 1;
+    $status_message = '';
+    $media_id = $_POST['media_id'];
+    $media_type = $_POST['media_type'];
+
+    if($media_type=='photo'){
+      $delete_status = wp_delete_attachment($media_id, true);
+      if($delete_status){
+        $status_code = 1;
+        $status_message = "Successfully deleting photo";
+      }
+      else {
+        $status_code = 0;
+        $status_message = "Failed to delete photo";
+      }
+    }
+    else if($media_type=='video'){
+      $status_code = 1;
+      $status_message = "Media type is video";
+      // Delete the attachment,
+      // Delete the post
+    }
+    die(json_encode(array('status'=>$status_code,'status_message'=>$status_message)));
+  }
+
+  function tag_media_callback(){
+    $media_id = $_POST['media_id'];
+    $media_type = $_POST['media_type'];
+    $media_caption = $_POST['media_caption'];
+    $media_description = $_POST['media_description'];
+
+    if($media_type=='photo'){
+      // Already done
+    }
+    else if($media_type=='video'){
+      // Get the post attachment
+      // Update the attachment caption and desc
+    }
+
+    // Update attachment data
+    $attachment = array();
+    $attachment['ID'] = $media_id;
+    $attachment['post_excerpt'] = $media_caption;
+    $attachment['post_content'] = $media_description;
+    // Update the attachment into the database
+    $update_status = wp_update_post($attachment);
+    if($update_status){
+        $status_code = 1;
+        $status_message = "Successfully updating media tag";
+    }
+    else {
+      $status_code = 0;
+      $status_message = "Failed to update media tag";
+    }
+
+    die(json_encode(array('status'=>$status_code,'status_message'=>$status_message)));
+  }
 };
 
 /**
  * Initialize The_Media_Uploader
  */
-add_action( 'plugins_loaded', array( 'The_Media_Uploader', 'init' ));
+add_action( 'plugins_loaded', array( 'The_Media_Uploader', 'init'), 10);
