@@ -91,21 +91,7 @@ $( document ).ready( function() {
 
 })(jQuery);
 
-function bootstrap_alert(message, alert_type){
-  var alert_elm = $('#alert');
-  alert_elm.html('<div class="alert alert-'+alert_type+'"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
-  alert_elm.fadeIn(500, function(){
-    setTimeout(function(){alert_elm.fadeOut(1000);}, 3000)
-  });
-}
-
-function show_add_video_spinner(){
-  $('<span id="mailboxes-addvideo-loader" class="field-side-loader"><span class="loader"></span></span>').insertAfter(".action-add-video");
-  $('#mailboxes-addvideo-loader .loader').spin('medium-left', '#000000');
-  $('#mailboxes-addvideo-loader').fadeIn(300);
-}
-
-function add_video(video_link, data_target, data_template, callback){
+function add_video(video_link, data_target, data_template, success_callback, failed_callback){
   if(video_link && video_link.length>0){
     var data = {
       action: 'add_video',
@@ -120,16 +106,17 @@ function add_video(video_link, data_target, data_template, callback){
       console.log($('li.new_thumb_video', target)[0]);
       $('li.new_thumb_video', target).replaceWith(json_response.html);
       if(json_response.status==1){
-        bootstrap_alert(json_response.status_message, 'success');
-        if(typeof(callback)=='function') callback();
+        if(typeof(success_callback)=='function') success_callback();
       }
       else {
         bootstrap_alert(json_response.status_message, 'error');
+        if(typeof(failed_callback)=='function') failed_callback();
       }
     });
   }
   else {
     bootstrap_alert('Please paste video embed URL', 'error');
+    if(typeof(failed_callback)=='function') failed_callback();
   }
 }
 
@@ -137,6 +124,12 @@ function show_delete_media_spinner(){
   $("#confirm-delete-media").parent().prepend('<span id="mailboxes-deletemedia-loader" class="button-side-loader"><span class="loader"></span></span>');
   $('#mailboxes-deletemedia-loader .loader').spin('medium-left', '#000000');
   $('#mailboxes-deletemedia-loader').fadeIn(300);
+}
+
+function show_media_tag_spinner(){
+  $("#confirm-tag").parent().prepend('<span id="media-tag-loader" class="button-side-loader"><span class="loader"></span></span>');
+  $('#media-tag-loader .loader').spin('medium-left', '#000000');
+  $('#media-tag-loader').fadeIn(300);
 }
 
 function confirm_delete_media(media_id, media_type, callback){
@@ -151,11 +144,6 @@ function confirm_delete_media(media_id, media_type, callback){
     $('#mailboxes-deletemedia-loader').fadeOut(300, function(){
       $(this).remove();
       if(json_response.status==1){
-        var thumb = $("#media-container li").filter(function(){
-          return $('.media-id', this).val()==media_id;
-        });
-        thumb.fadeOut(300, function(){$(this).remove();});
-        bootstrap_alert(json_response.status_message, 'success');
         if(typeof(callback)=='function') callback();
       }
       else {
@@ -165,15 +153,7 @@ function confirm_delete_media(media_id, media_type, callback){
   });
 }
 
-function show_media_tag_spinner(){
-  $("#confirm-tag").parent().prepend('<span id="media-tag-loader" class="button-side-loader"><span class="loader"></span></span>');
-  $('#media-tag-loader .loader').spin('medium-left', '#000000');
-  $('#media-tag-loader').fadeIn(300);
-}
-
-function confirm_tag_media(media_id, media_type, media_caption_elm, media_description_elm, callback){
-  var media_caption = media_caption_elm.val();
-  var media_description = media_description_elm.val();
+function confirm_tag_media(media_id, media_type, media_caption, media_description, success_callback, failed_callback){
   var exists = false;
   if(media_caption && media_caption.length>0){
     exists = true;
@@ -197,14 +177,12 @@ function confirm_tag_media(media_id, media_type, media_caption_elm, media_descri
         $(this).remove();
         if(json_response.status==1){
           bootstrap_alert(json_response.status_message, 'success');
-          // Reset the form
-          media_caption_elm.val('');
-          media_description_elm.val('');
           // Do callback, which is close the modal when add tag success
-          if(typeof(callback)=='function') callback();
+          if(typeof(success_callback)=='function') success_callback();
         }
         else {
           bootstrap_alert(json_response.status_message, 'error');
+          if(typeof(failed_callback)=='function') failed_callback();
         }
       });
     });

@@ -284,30 +284,24 @@ class The_Media_Uploader {
   }
 
   function add_video_callback(){
-    global $attachment_id, $attachment_link, $attachment_thumb, $media_type;
+    global $attachment_id, $attachment_link, $attachment_thumb, $media_type, $media_caption, $media_description;
     $video_link = $_POST['video_link'];
     $template = $_POST['template'];
-    $valid = true;
     $html = '';
 
     // Checks for any YouTube URL. After http(s) support a or v for Youtube Lyte and v or vh for Smart Youtube plugin
-		if ( !isset( $matches[1] ) ) {
-			preg_match( '#(?:https?(?:a|vh?)?://)?(?:www\.)?youtube(?:\-nocookie)?\.com/watch\?.*v=([A-Za-z0-9\-_]+)#', $video_link, $matches );
+		if(!isset($matches[1])){
+			preg_match('#(?:https?(?:a|vh?)?://)?(?:www\.)?youtube(?:\-nocookie)?\.com/watch\?.*v=([A-Za-z0-9\-_]+)#', $video_link, $matches);
 		}
 		// Checks for any shortened youtu.be URL. After http(s) a or v for Youtube Lyte and v or vh for Smart Youtube plugin
-		if ( !isset( $matches[1] ) ) {
-			preg_match( '#(?:https?(?:a|vh?)?://)?youtu\.be/([A-Za-z0-9\-_]+)#', $video_link, $matches );
+		if(!isset($matches[1])){
+			preg_match('#(?:https?(?:a|vh?)?://)?youtu\.be/([A-Za-z0-9\-_]+)#', $video_link, $matches);
 		}
 
-    $video_thumbnail = 'http://img.youtube.com/vi/0/0.jpg';
     if(isset($matches[1])){
-			$video_thumbnail = 'http://img.youtube.com/vi/' . $matches[1] . '/0.jpg';
-    }
-    else {
-      $valid = false;
-    }
+			$video_thumbnail = 'http://img.youtube.com/vi/'.$matches[1].'/0.jpg';
+      $video_link = 'http://www.youtube.com/watch?v='.$matches[1];
 
-    if($valid){
       // Create post object
       $post_data = array(
         'post_title'    => $video_link,
@@ -328,6 +322,8 @@ class The_Media_Uploader {
         $attachment_link = '';
         $attachment_thumb = $video_thumbnail;
         $media_type = 'video';
+        $media_caption = '';
+        $media_description = '';
         // Redirect echo into string
         ob_start();
         load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
@@ -346,7 +342,7 @@ class The_Media_Uploader {
       $status_message = 'Please add a valid video link';
     }
 
-    die(json_encode(array('status'=>$status_code,'status_message'=>$status_message, 'html'=>$html, 'thumbnail'=>json_encode($intermediate))));
+    die(json_encode(array('status'=>$status_code,'status_message'=>$status_message, 'html'=>$html)));
   }
 
   function delete_media_callback(){
@@ -397,7 +393,7 @@ class The_Media_Uploader {
   }
 
   public function media_manage_list_media($template){
-    global $attachment_link, $attachment_thumb, $attachment_id, $media_type;
+    global $attachment_link, $attachment_thumb, $attachment_id, $media_type, $media_caption, $media_description;
     $html = '';
     $args = array(
       'post_type' => array('attachment', 'videos'),
@@ -422,6 +418,9 @@ class The_Media_Uploader {
           $attachment_thumb = $video_thumbnail;
           $media_type = 'video';
         }
+        $media_caption = $post->post_excerpt;
+        $media_description = $post->post_content;
+        
         // Redirect echo into string
         ob_start();
         load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);

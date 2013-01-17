@@ -1,8 +1,6 @@
-<?php global $attachment_link, $attachment_thumb, $attachment_id, $media_type; ?>
+<?php global $attachment_link, $attachment_thumb, $attachment_id, $media_type, $media_caption, $media_description; ?>
 
-<li>
-  <input type="hidden" class="media-id" value="<?=$attachment_id?>" />
-  <input type="hidden" class="media-type" value="<?=$media_type?>" />
+<li media-id="<?=$attachment_id?>" media-type="<?=$media_type?>" media-caption="<?=$media_caption?>" media-description="<?=$media_description?>">
   <a class="thumbnail">
     <img src="<?=$attachment_thumb?>" id="thumb_<?=$attachment_id?>" />
     <div class="thumb-trash"><i class="icon-trash"></i></div>
