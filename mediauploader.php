@@ -33,6 +33,7 @@ class The_Media_Uploader {
     add_action('template_redirect', array($this, 'action_load_dependencies'));
     add_action('admin_menu', array($this, 'action_admin_menu'));
     add_action('wp_ajax_plupload_action', array($this, 'g_plupload_action'));
+    /* Used in toolbox manage media module */
     add_action('wp_ajax_delete_media', array($this, 'delete_media_callback'));
     add_action('wp_ajax_tag_media', array($this, 'tag_media_callback'));
     add_action('wp_ajax_add_video', array($this, 'add_video_callback'));
@@ -154,7 +155,7 @@ class The_Media_Uploader {
   /**
    * Shows admin menu for the media uploader
    *
-   * @uses
+   * @uses add_options_page
    * @action admin_menu
    * @return null
    */
@@ -240,7 +241,7 @@ class The_Media_Uploader {
   /**
    * Media uploader shortcode
    *
-   * @uses 
+   * @uses is_user_logged_in, ob_start, ob_get_conents, ob_end_clean
    * @action init
    * @return shortcode string
    */
@@ -283,7 +284,15 @@ class The_Media_Uploader {
     return $string;
   }
 
+  /**
+   * Ajax function for adding video on manage media module
+   *
+   * @uses wp_insert_post, load_template, add_post_meta, preg_match, ob_start, ob_end_clean, ob_get_contents, json_encode
+   * @action wp_ajax_add_video
+   * @return void
+   */
   function add_video_callback(){
+    /* Set global for usage in template */
     global $attachment_id, $attachment_link, $attachment_thumb, $media_type, $media_caption, $media_description;
     $video_link = $_POST['video_link'];
     $template = $_POST['template'];
@@ -298,11 +307,14 @@ class The_Media_Uploader {
 			preg_match('#(?:https?(?:a|vh?)?://)?youtu\.be/([A-Za-z0-9\-_]+)#', $video_link, $matches);
 		}
 
+    // If it is a youtube video
     if(isset($matches[1])){
+      // Get youtube video thumbnail
 			$video_thumbnail = 'http://img.youtube.com/vi/'.$matches[1].'/0.jpg';
+      // Normalize youtube video link
       $video_link = 'http://www.youtube.com/watch?v='.$matches[1];
 
-      // Create post object
+      // Create new post object with type videos
       $post_data = array(
         'post_title'    => $video_link,
         'post_content'  => '',
@@ -312,23 +324,29 @@ class The_Media_Uploader {
         'post_author'   => 1,
         'post_category' => array()
       );
-      // Insert the post into the database
+      // Insert the post into the database, return post id if success
       $post_id = wp_insert_post($post_data);
 
-      // FIlls variable content
+      // Add post success
       if($post_id>0){
+        // Now add thumbnail link to post meta
         add_post_meta($post_id, 'video_thumbnail', $video_thumbnail);
+
+        // Fill variables value for template
         $attachment_id = $post_id;
         $attachment_link = '';
         $attachment_thumb = $video_thumbnail;
         $media_type = 'video';
         $media_caption = '';
         $media_description = '';
-        // Redirect echo into string
+
+        // Get template, redirect echo into string
         ob_start();
         load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
         $html = ob_get_contents();
         ob_end_clean();
+
+        // Set function return status and message
         $status_code = 1;
         $status_message = 'Successfully adding new video';
       }
@@ -342,20 +360,36 @@ class The_Media_Uploader {
       $status_message = 'Please add a valid video link';
     }
 
+    // Return ajax response as json string
     die(json_encode(array('status'=>$status_code,'status_message'=>$status_message, 'html'=>$html)));
   }
 
+  /**
+   * Ajax function for delete photo (post type attachment) and video (post type videos) on manage media module
+   *
+   * @uses wp_delete_attachment, wp_delete_post, json_encode
+   * @action wp_ajax_delete_media
+   * @return void
+   */
   function delete_media_callback(){
     $media_id = $_POST['media_id'];
     $media_type = $_POST['media_type'];
+
     $delete_status = 0;
 
+    // Different type, different ways of deleting post.
+    // Delete photo as an attachment so wp will remove all the images files
     if($media_type=='photo'){
+      // Delete attachment, attachment id = $media_id, force_delete = true
       $delete_status = wp_delete_attachment($media_id, true);
     }
+    // Video is a post
     else if($media_type=='video'){
+      // Delete post, post id = $media_id, force_delete = true
       $delete_status = wp_delete_post($media_id, true);
     }
+
+    // Create status code and status message
     if($delete_status){
       $status_code = 1;
       $status_message = "Successfully deleting ".$media_type;
@@ -364,22 +398,34 @@ class The_Media_Uploader {
       $status_code = 0;
       $status_message = "Failed to delete photo".$media_type;
     }
+
+    // Return ajax response as json string
     die(json_encode(array('status'=>$status_code,'status_message'=>$status_message)));
   }
 
+  /**
+   * Ajax function for tagging media caption and description on manage media module
+   *
+   * @uses wp_update_post, json_encode
+   * @action wp_ajax_tag_media
+   * @return void
+   */
   function tag_media_callback(){
     $media_id = $_POST['media_id'];
     $media_type = $_POST['media_type'];
     $media_caption = $_POST['media_caption'];
     $media_description = $_POST['media_description'];
 
-    // Update attachment data
+    // Create post data to be updated
     $post = array();
     $post['ID'] = $media_id;
     $post['post_excerpt'] = $media_caption;
     $post['post_content'] = $media_description;
+
     // Update the attachment into the database
     $update_status = wp_update_post($post);
+
+    // Set status code and status message
     if($update_status){
         $status_code = 1;
         $status_message = "Successfully updating ".$media_type." tag";
@@ -389,24 +435,38 @@ class The_Media_Uploader {
       $status_message = "Failed to update ".$media_type." tag";
     }
 
+    // Return ajax response as json string
     die(json_encode(array('status'=>$status_code,'status_message'=>$status_message)));
   }
 
+  /**
+   * Public function for pre loading exsisting media and show it on manage media module
+   *
+   * @uses get_posts, get_attachment_link, wp_get_attachment_thumb_url, get_post_permalink, get_post_meta, load_template, ob_start, ob_end_clean, ob_get_contents
+   * @action
+   * @return void
+   */
   public function media_manage_list_media($template){
+    /* Set global for usage in template */
     global $attachment_link, $attachment_thumb, $attachment_id, $media_type, $media_caption, $media_description;
     $html = '';
+
+    // Load 100 items of these types of video with any post status
     $args = array(
       'post_type' => array('attachment', 'videos'),
       'numberposts' => 100,
       'post_status' => 'any',
       'post_parent' => 0
     );
+    // Do get it
     $posts = get_posts($args);
 
-    if ($posts) {
+    // Post loaded
+    if($posts){
       foreach ($posts as $post) {
         // FIlls variable content
         $attachment_id = $post->ID;
+        // Different type of post, different ways to load contents
         if($post->post_type=='attachment'){
           $attachment_link = get_attachment_link($post->ID);
           $attachment_thumb = wp_get_attachment_thumb_url($post->ID);
@@ -418,10 +478,12 @@ class The_Media_Uploader {
           $attachment_thumb = $video_thumbnail;
           $media_type = 'video';
         }
+        // In our media, excerpt is caption
         $media_caption = $post->post_excerpt;
+        // In our media, description is post content
         $media_description = $post->post_content;
         
-        // Redirect echo into string
+        // Load template from file, redirect echo into string
         ob_start();
         load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
         $html .= ob_get_contents();
@@ -429,6 +491,7 @@ class The_Media_Uploader {
       }
     }
 
+    // Returns the html for list of media
     return $html;
   }
 };

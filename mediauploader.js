@@ -1,7 +1,7 @@
 (function($){ // Open closure
 
 /**
- * The media uploader jQuery plugin
+ * The media uploader jQuery plugin, this one is for photo upload
  */
 $.fn.mediauploader = function(options) {
   // Initialize our variables
@@ -46,9 +46,10 @@ $.fn.mediauploader = function(options) {
           up.start();
         });
 
+        // Upload progress (not used at the moment)
         //uploader.bind('UploadProgress', function(up, file){});
 
-        // a file was uploaded
+        // When the file was uploaded
         uploader.bind('FileUploaded', function(up, file, response){
           var json_response = JSON.parse(response["response"]);
 
@@ -91,20 +92,96 @@ $( document ).ready( function() {
 
 })(jQuery);
 
+/**
+ * Function for add video on manage media module
+ *
+ * @param video_link
+ * @param data_target
+ * @param data_template
+ * @param success_callback
+ * @param failed_callback
+ * @return void
+ */
 function add_video(video_link, data_target, data_template, success_callback, failed_callback){
+  // If video link is not empty (validate on server side later)
   if(video_link && video_link.length>0){
     var data = {
       action: 'add_video',
       'video_link': video_link,
       'template': data_template
     };
+    // Set target element list container
     var target = $('#'+data_target);
+    // Prepend new list but at first just show the loading spinner
     target.prepend('<li class="new_thumb_video"><a><span class="loader"></span></a></li>');
     $('.new_thumb_video .loader', target).spin('medium-left', '#000000');
+
+    // Post the video link via ajax
     $.post(ajaxurl, data, function(response) {
       var json_response = JSON.parse(response);
-      console.log($('li.new_thumb_video', target)[0]);
-      $('li.new_thumb_video', target).replaceWith(json_response.html);
+      if(json_response.status==1){
+        // If success, replace our newly created list with real content
+        $('li.new_thumb_video', target).replaceWith(json_response.html);
+        if(typeof(success_callback)=='function') success_callback();
+      }
+      else {
+        // If failed remove our newly created list
+        $('li.new_thumb_video', target).fadeOut(300, function(){$(this).remove();});
+        bootstrap_alert(json_response.status_message, 'error');
+        if(typeof(failed_callback)=='function') failed_callback();
+      }
+    });
+  }
+  // If input is empty
+  else {
+    bootstrap_alert('Please paste video embed URL', 'error');
+    if(typeof(failed_callback)=='function') failed_callback();
+  }
+}
+
+/**
+ * Function for showing the spinner when in progress of deleting media
+ */
+function show_delete_media_spinner(){
+  // Show spinner beside the buttons, prepend on button's parent div
+  $("#confirm-delete-media").parent().prepend('<span id="mailboxes-deletemedia-loader" class="button-side-loader"><span class="loader"></span></span>');
+  $('#mailboxes-deletemedia-loader .loader').spin('medium-left', '#000000');
+  $('#mailboxes-deletemedia-loader').fadeIn(300);
+}
+
+/**
+ * Function for showing the spinner when in progress of updating media tag
+ */
+function show_media_tag_spinner(){
+  // Show spinner beside the buttons, prepend on button's parent div
+  $("#confirm-tag").parent().prepend('<span id="media-tag-loader" class="button-side-loader"><span class="loader"></span></span>');
+  $('#media-tag-loader .loader').spin('medium-left', '#000000');
+  $('#media-tag-loader').fadeIn(300);
+}
+
+/**
+ * Function to confirm deleting media by ajax post, run success_callback if success, and failed_callback if otherwise
+ *
+ * @param media_id
+ * @param media_type
+ * @param success_callback
+ * @param failed_callback
+ */
+function confirm_delete_media(media_id, media_type, success_callback, failed_callback){
+  // Load ajax data
+  var data = {
+    action: 'delete_media',
+    'media_id': media_id,
+    'media_type': media_type
+  };
+
+  // Show spinner while waiting
+  show_delete_media_spinner();
+  $.post(ajaxurl, data, function(response) {
+    var json_response = JSON.parse(response);
+    // Remove spinner first by hiding it then remove the element
+    $('#mailboxes-deletemedia-loader').fadeOut(300, function(){
+      $(this).remove();
       if(json_response.status==1){
         if(typeof(success_callback)=='function') success_callback();
       }
@@ -113,47 +190,21 @@ function add_video(video_link, data_target, data_template, success_callback, fai
         if(typeof(failed_callback)=='function') failed_callback();
       }
     });
-  }
-  else {
-    bootstrap_alert('Please paste video embed URL', 'error');
-    if(typeof(failed_callback)=='function') failed_callback();
-  }
-}
-
-function show_delete_media_spinner(){
-  $("#confirm-delete-media").parent().prepend('<span id="mailboxes-deletemedia-loader" class="button-side-loader"><span class="loader"></span></span>');
-  $('#mailboxes-deletemedia-loader .loader').spin('medium-left', '#000000');
-  $('#mailboxes-deletemedia-loader').fadeIn(300);
-}
-
-function show_media_tag_spinner(){
-  $("#confirm-tag").parent().prepend('<span id="media-tag-loader" class="button-side-loader"><span class="loader"></span></span>');
-  $('#media-tag-loader .loader').spin('medium-left', '#000000');
-  $('#media-tag-loader').fadeIn(300);
-}
-
-function confirm_delete_media(media_id, media_type, callback){
-  var data = {
-    action: 'delete_media',
-    'media_id': media_id,
-    'media_type': media_type
-  };
-  show_delete_media_spinner();
-  $.post(ajaxurl, data, function(response) {
-    var json_response = JSON.parse(response);
-    $('#mailboxes-deletemedia-loader').fadeOut(300, function(){
-      $(this).remove();
-      if(json_response.status==1){
-        if(typeof(callback)=='function') callback();
-      }
-      else {
-        bootstrap_alert(json_response.status_message, 'error');
-      }
-    });
   });
 }
 
+/**
+ * Function to save media tag by ajax post
+ *
+ * @param media_id
+ * @param media_type
+ * @param media_caption
+ * @param media_description
+ * @param success_callback
+ * @param failed_callback
+ */
 function confirm_tag_media(media_id, media_type, media_caption, media_description, success_callback, failed_callback){
+  // Input validation
   var exists = false;
   if(media_caption && media_caption.length>0){
     exists = true;
@@ -162,8 +213,8 @@ function confirm_tag_media(media_id, media_type, media_caption, media_descriptio
     exists = true;
   }
 
+  // If any of the content not empty (either caption or description)
   if(exists){
-    show_media_tag_spinner();
     var data = {
       action: 'tag_media',
       'media_id': media_id,
@@ -171,13 +222,17 @@ function confirm_tag_media(media_id, media_type, media_caption, media_descriptio
       'media_caption': media_caption,
       'media_description': media_description
     };
+    
+    // Show spinner while waiting
+    show_media_tag_spinner();
     $.post(ajaxurl, data, function(response) {
       var json_response = JSON.parse(response);
+      // Remove spinner first
       $('#media-tag-loader').fadeOut(300, function(){
         $(this).remove();
         if(json_response.status==1){
           bootstrap_alert(json_response.status_message, 'success');
-          // Do callback, which is close the modal when add tag success
+          // Do success callback if updating is success
           if(typeof(success_callback)=='function') success_callback();
         }
         else {
@@ -187,5 +242,5 @@ function confirm_tag_media(media_id, media_type, media_caption, media_descriptio
       });
     });
   }
-  // else do nothing
+  // else do nothing if both inputs are empty
 }
