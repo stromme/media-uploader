@@ -33,6 +33,8 @@ class The_Media_Uploader {
     add_action('template_redirect', array($this, 'action_load_dependencies'));
     add_action('admin_menu', array($this, 'action_admin_menu'));
     add_action('wp_ajax_plupload_action', array($this, 'g_plupload_action'));
+    add_action('wp_ajax_logo_plupload_action', array($this, 'g_logo_plupload_action'));
+    add_action('wp_ajax_accolade_plupload_action', array($this, 'g_accolade_plupload_action'));
     /* Used in toolbox manage media module */
     add_action('wp_ajax_delete_media', array($this, 'delete_media_callback'));
     add_action('wp_ajax_tag_media', array($this, 'tag_media_callback'));
@@ -103,13 +105,13 @@ class The_Media_Uploader {
     // Globalize variable tobe able to access in the template
     global $attachment_id, $attachment_link, $attachment_thumb, $media_type;
 
-    $imgid = $_POST["img_id"];
-    $postid = $_POST["post_id"];
+    $img_id = $_POST["img_id"];
+    $post_id = $_POST["post_id"];
     $template = $_POST["template"];
-    if($postid=='') $postid=0;
+    if($post_id=='') $post_id=0;
 
     // Handle file upload
-    $status = wp_handle_upload($_FILES['file_'.$imgid], array('test_form' => true, 'action' => 'plupload_action'));
+    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => true, 'action' => 'plupload_action'));
     $status["status_code"] = 0;
 
     // If status is containing minimum 3 parameter: url, uri, and type
@@ -126,7 +128,7 @@ class The_Media_Uploader {
         'post_title' => preg_replace('/\.[^.]+$/','', $file)
       );
       //These 4 lines actually insert the attachment into the Media Library using the attachment_data array created above.
-      $attach_id = wp_insert_attachment($attachment_data, $path, $postid);
+      $attach_id = wp_insert_attachment($attachment_data, $path, $post_id);
       //Yes, you do "require" the following line of code
       require_once(ABSPATH."wp-admin".'/includes/image.php');
       $attach_data = wp_generate_attachment_metadata($attach_id, $path);
@@ -145,8 +147,158 @@ class The_Media_Uploader {
       $status["status_code"] = 1;
       $status["html"] = $string;
 
-      //DESTROY ALL THE THINGS
+      // Destroy used attachment variables
       unset($attach_id, $attach_data, $attachment_data, $file, $path, $wp_filetype);
+    }
+    echo json_encode($status);
+    exit;
+  }
+
+  /**
+   * Removing existing logo image, add new uploaded image, and set it as default header image
+   *
+   * @uses wp_handle_upload, wp_generate_attachment_metadata, wp_update_attachment_metadata, get_attachment_link, wp_get_image_editor, wp_delete_attachment, add_post_meta, json_encode
+   * @action wp_ajax_logo_plupload_action
+   * @return null
+   */
+  function g_logo_plupload_action() {
+    // Globalize variable tobe able to access in the template
+    global $attachment_id, $attachment_link, $attachment_thumb, $media_type;
+
+    $img_id = $_POST["img_id"];
+
+    // Handle file upload
+    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => true, 'action' => 'logo_plupload_action'));
+    $status["status_code"] = 0;
+
+    // If status is containing minimum 3 parameter: url, uri, and type
+    if(count($status)>2){
+      $image = $status["url"];
+      $wp_upload_dir = wp_upload_dir(); // Get the wp upload dir
+      $file = basename($image); // Grab just filename
+      $path = $wp_upload_dir['path'].'/'.$file; // Create URI
+      $wp_filetype = wp_check_filetype($file); // Get MIME type
+      // Create attachment data
+      $attachment_data = array(
+        'guid' => $image,
+        'post_mime_type' => $wp_filetype['type'],
+        'post_title' => preg_replace('/\.[^.]+$/','', $file)
+      );
+      //These 4 lines actually insert the attachment into the Media Library using the attachment_data array created above.
+      $attach_id = wp_insert_attachment($attachment_data, $path, 0);
+      //Yes, you do "require" the following line of code
+      require_once(ABSPATH."wp-admin".'/includes/image.php');
+      $attach_data = wp_generate_attachment_metadata($attach_id, $path);
+      wp_update_attachment_metadata($attach_id,$attach_data);
+      // Get permalink (in case needed), this also creates many file with various sizes
+      $attachment_id = $attach_id;
+      $attachment_link = get_attachment_link($attach_id);
+      $image = wp_get_image_editor($status["file"]); // Return an implementation that extends <tt>WP_Image_Editor</tt>
+      if(!is_wp_error($image)){
+        $image->resize(250, 200, true);
+        $image->save($status["file"]);
+      }
+
+      // Get all header images
+      $args = array(
+        'numberposts' => -1,
+        'post_type' => 'attachment',
+        'post_status' => 'any',
+        'post_parent' => null,
+        'meta_key' => '_wp_attachment_is_custom_header',
+        'meta_value' => get_option('stylesheet')
+      );
+      $posts = get_posts($args);
+
+      // Remove all existing header images
+      if($posts){
+        foreach ($posts as $post) {
+          wp_delete_attachment($post->ID, true);
+        }
+      }
+
+      // Make currently uploaded image as header image
+      add_post_meta($attach_id, '_wp_attachment_context', 'custom-header');
+      add_post_meta($attach_id, '_wp_attachment_is_custom_header', get_option('stylesheet'));
+      
+      // Set it as custom header image
+      $args = array(
+        'width'         => 250,
+        'height'        => 200,
+        'default-image' => $status["url"],
+        'thumbnail_url' => $status['url'],
+        'url'           => $status['url'],
+      );
+      add_theme_support('custom-header', $args);
+			set_theme_mod( 'header_image', $status['url'] );
+			set_theme_mod( 'header_image_data', $args );
+
+      $status["status_code"] = 1;
+
+      // Destroy used attachment variables
+      unset($attach_id, $attach_data, $attachment_data, $file, $path);
+    }
+    echo json_encode($status);
+    exit;
+  }
+
+  /**
+   * Removing existing accolade image and add new accolade image
+   *
+   * @uses wp_handle_upload, wp_generate_attachment_metadata, wp_update_attachment_metadata, get_attachment_link, wp_get_image_editor, get_post_meta, wp_delete_attachment
+   * @action wp_ajax_accolade_plupload_action
+   * @return null
+   */
+  function g_accolade_plupload_action() {
+    // Globalize variable tobe able to access in the template
+    global $attachment_id, $attachment_link, $attachment_thumb, $media_type;
+
+    $img_id = $_POST["img_id"];
+    $old_id = $_POST["current_id"];
+    $post_id = $_POST["post_id"];
+
+    // Handle file upload
+    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => true, 'action' => 'accolade_plupload_action'));
+    $status["status_code"] = 0;
+
+    // If status is containing minimum 3 parameter: url, uri, and type
+    if(count($status)>2){
+      $image = $status["url"];
+      $wp_upload_dir = wp_upload_dir(); // Get the wp upload dir
+      $file = basename($image); // Grab just filename
+      $path = $wp_upload_dir['path'].'/'.$file; // Create URI
+      $wp_filetype = wp_check_filetype($file); // Get MIME type
+      // Create attachment data
+      $attachment_data = array(
+        'guid' => $image,
+        'post_mime_type' => $wp_filetype['type'],
+        'post_title' => preg_replace('/\.[^.]+$/','', $file)
+      );
+      //These 4 lines actually insert the attachment into the Media Library using the attachment_data array created above.
+      if($post_id=="") $post_id = 0;
+      $attach_id = wp_insert_attachment($attachment_data, $path, $post_id);
+      //Yes, you do "require" the following line of code
+      require_once(ABSPATH."wp-admin".'/includes/image.php');
+      $attach_data = wp_generate_attachment_metadata($attach_id, $path);
+      wp_update_attachment_metadata($attach_id,$attach_data);
+      // Get permalink (in case needed), this also creates many file with various sizes
+      $image = wp_get_image_editor($status["file"]); // Return an implementation that extends <tt>WP_Image_Editor</tt>
+
+      // Resize it
+      if(!is_wp_error($image)){
+        $image->resize(50, 50, true);
+        $image->save($status["file"]);
+      }
+
+      // Delete the old one
+      if($old_id) wp_delete_attachment($old_id, true);
+
+      $status["status_code"] = 1;
+      // Return new attachment ID
+      $status["id"] = $attach_id;
+
+      // Destroy used attachment variables
+      unset($attach_id, $attach_data, $attachment_data, $file, $path);
     }
     echo json_encode($status);
     exit;
@@ -396,7 +548,7 @@ class The_Media_Uploader {
     }
     else {
       $status_code = 0;
-      $status_message = "Failed to delete photo".$media_type;
+      $status_message = "Failed to delete ".$media_type;
     }
 
     // Return ajax response as json string
@@ -454,7 +606,7 @@ class The_Media_Uploader {
     // Load 100 items of these types of video with any post status
     $args = array(
       'post_type' => array('attachment', 'videos'),
-      'numberposts' => 100,
+      'numberposts' => -1,
       'post_status' => 'any',
       'post_parent' => 0
     );

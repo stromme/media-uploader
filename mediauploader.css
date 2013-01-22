@@ -37,3 +37,59 @@
   padding: 14px 5px 0 5px;
   width: 40px;
 }
+
+/* Logo image uploader box style */
+
+.logo-loader {
+  display: inline-block;
+  text-align: center;
+  width: 258px;
+  height: 198px;
+  position: relative;
+  border: 1px solid #DDD;
+  border-radius: 5px;
+  margin-top: 10px;
+  visibility: hidden;
+}
+
+.logo-loader .loader {
+  left: 50%;
+  top: 50%;
+  position: absolute;
+  margin-left: -15px;
+}
+
+/* Accolade image uploader box style */
+
+.accolade-image-loader {
+  display: inline-block;
+  text-align: left;
+  width: 48px;
+  height: 48px;
+  position: relative;
+  border: 1px solid #DDD;
+  border-radius: 3px;
+  margin-right: 12px;
+  margin-bottom: 12px;
+  vertical-align: middle;
+  visibility: hidden;
+}
+
+.accolade-image-loader .loader {
+  left: 50%;
+  top: 50%;
+  position: absolute;
+  margin-left: -15px;
+}
+
+.button-side-loader.delete-accolade-loader {
+  float: right;
+  width: 33px;
+  padding-top: 10px;
+}
+
+/* Control group class extend */
+
+.input-validation.control-group {
+  margin-bottom: 5px;
+}
