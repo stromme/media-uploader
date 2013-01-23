@@ -51,14 +51,22 @@ $.fn.mediauploader = function(options) {
 
         // When the file was uploaded
         uploader.bind('FileUploaded', function(up, file, response){
-          var json_response = JSON.parse(response["response"]);
-
-          if(json_response["status_code"]==1){
-            $('li.new_thumb_'+file.id, target).replaceWith(json_response["html"]);
+          if(typeof(response=="Object") && response.status==0){
+            setTimeout(function(){
+              $('li.new_thumb_'+file.id, target).remove();
+              cmd.showError("Connection error");
+            }, 100);
           }
           else {
-            cmd.showError(json_response["error"]);
-            $('li.new_thumb_'+file.id, target).fadeOut(500, function(){$(this).remove();});
+            var json_response = JSON.parse(response["response"]);
+
+            if(json_response["status_code"]==1){
+              $('li.new_thumb_'+file.id, target).replaceWith(json_response["html"]);
+            }
+            else {
+              cmd.showError(json_response["error"]);
+              $('li.new_thumb_'+file.id, target).fadeOut(500, function(){$(this).remove();});
+            }
           }
         });
 
@@ -68,13 +76,14 @@ $.fn.mediauploader = function(options) {
         });
       },
       showError: function(error_string){
-        $('<div class="upload_error" style="display:none;">'+error_string+'</div>').insertAfter(elm);
+        $('.upload_error').remove();
+        elm.parent().append($('<div class="upload_error" style="display:none;">'+error_string+'</div>'));
         var upload_err = $('.upload_error');
         upload_err.fadeIn(1000);
         // Then remove slowly
         setTimeout(function(){
           upload_err.animate({'opacity':0}, 1000, function(){
-            $(this).hide(100, function(){$(this).remove();});
+            $(this).slideUp(100, function(){$(this).remove();});
           });
         }, 2000);
       }
@@ -137,18 +146,27 @@ $.fn.logouploader = function(options) {
 
         // When the file was uploaded
         logo_uploader.bind('FileUploaded', function(up, file, response){
-          var json_response = JSON.parse(response["response"]);
+          if(typeof(response=="Object") && response.status==0){
+            setTimeout(function(){
+              $('.logo-loader', target.parent()).remove();
+              target.fadeIn(300);
+              cmd.showError("Connection error");
+            }, 200);
+          }
+          else {
+            var json_response = JSON.parse(response["response"]);
 
-          logo_loader.fadeOut(200, function(){
-            $(this).remove();
-            if(json_response["status_code"]==1){
-              target.attr('src', json_response["url"]);
-            }
-            else {
-              cmd.showError('Failed to upload new logo');
-            }
-            target.fadeIn(300);
-          });
+            logo_loader.fadeOut(200, function(){
+              $(this).remove();
+              if(json_response["status_code"]==1){
+                target.attr('src', json_response["url"]);
+              }
+              else {
+                cmd.showError('Failed to upload new logo');
+              }
+              target.fadeIn(300);
+            });
+          }
         });
 
         logo_uploader.bind('Error', function(up, e){
@@ -163,13 +181,14 @@ $.fn.logouploader = function(options) {
         });
       },
       showError: function(error_string){
+        $('.upload_error').remove();
         $('<div class="upload_error" style="display:inline-block;opacity:0;margin-top:0;margin-bottom:10px;text-align:center;width:238px;">'+error_string+'</div>').insertBefore(elm);
         var upload_err = $('.upload_error');
         upload_err.animate({'opacity':1}, 500);
         // Then remove slowly
         setTimeout(function(){
           upload_err.animate({'opacity':0}, 1000, function(){
-            $(this).hide(100, function(){$(this).remove();});
+            $(this).slideUp(100, function(){$(this).remove();});
           });
         }, 2000);
       }
@@ -234,18 +253,27 @@ $.fn.accoladeuploader = function() {
 
         // When the file was uploaded
         accolade_uploader.bind('FileUploaded', function(up, file, response){
-          var json_response = JSON.parse(response["response"]);
-          accolade_image_loader.fadeOut(200, function(){
-            $(this).remove();
-            if(json_response["status_code"]==1){
-              target.attr('src', json_response["url"]);
-              target.attr('current-id', json_response["id"]);
-            }
-            else {
-              cmd.showError('Failed to upload new logo');
-            }
-            target.fadeIn(300);
-          });
+          if(typeof(response=="Object") && response.status==0){
+            setTimeout(function(){
+              accolade_image_loader.remove();
+              target.fadeIn(300);
+              cmd.showError("Connection error");
+            }, 200);
+          }
+          else {
+            var json_response = JSON.parse(response["response"]);
+            accolade_image_loader.fadeOut(200, function(){
+              $(this).remove();
+              if(json_response["status_code"]==1){
+                target.attr('src', json_response["url"]);
+                target.attr('current-id', json_response["id"]);
+              }
+              else {
+                cmd.showError('Failed to upload new logo');
+              }
+              target.fadeIn(300);
+            });
+          }
         });
 
         accolade_uploader.bind('Error', function(up, e){
@@ -260,13 +288,14 @@ $.fn.accoladeuploader = function() {
         });
       },
       showError: function(error_string){
+        $('.upload_error').remove();
         $('<div class="upload_error" style="width:86%;margin: 0 0 5px 0;padding:0 12px;">'+error_string+'</div>').insertAfter(elm);
         var upload_err = $('.upload_error');
         upload_err.animate({'opacity':1}, 500);
         // Then remove slowly
         setTimeout(function(){
           upload_err.animate({'opacity':0}, 1000, function(){
-            $(this).hide(100, function(){$(this).remove();});
+            $(this).slideUp(100, function(){$(this).remove();});
           });
         }, 2000);
       }
@@ -323,6 +352,11 @@ function add_video(video_link, data_target, data_template, success_callback, fai
         bootstrap_alert(json_response.status_message, 'error');
         if(typeof(failed_callback)=='function') failed_callback();
       }
+    })
+    .error(function() {
+      $('.new_thumb_video').remove();
+      bootstrap_alert("Connection error", 'error');
+      if(typeof(failed_callback)=='function') failed_callback();
     });
   }
   // If input is empty
@@ -383,6 +417,13 @@ function confirm_delete_media(media_id, media_type, success_callback, failed_cal
         if(typeof(failed_callback)=='function') failed_callback();
       }
     });
+  })
+  .error(function() {
+    $('#mailboxes-deletemedia-loader').fadeOut(200, function(){
+      $(this).remove();
+      bootstrap_alert("Connection error", 'error');
+      if(typeof(failed_callback)=='function') failed_callback();
+    });
   });
 }
 
@@ -432,6 +473,13 @@ function confirm_tag_media(media_id, media_type, media_caption, media_descriptio
           bootstrap_alert(json_response.status_message, 'error');
           if(typeof(failed_callback)=='function') failed_callback();
         }
+      });
+    })
+    .error(function() {
+      $('#media-tag-loader').fadeOut(200, function(){
+        $(this).remove();
+        bootstrap_alert("Connection error", 'error');
+        if(typeof(failed_callback)=='function') failed_callback();
       });
     });
   }
