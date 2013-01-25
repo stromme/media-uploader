@@ -618,28 +618,31 @@ class The_Media_Uploader {
       foreach ($posts as $post) {
         // FIlls variable content
         $attachment_id = $post->ID;
-        // Different type of post, different ways to load contents
-        if($post->post_type=='attachment'){
-          $attachment_link = get_attachment_link($post->ID);
-          $attachment_thumb = wp_get_attachment_thumb_url($post->ID);
-          $media_type = 'photo';
+        $context = get_post_meta($post->ID, '_wp_attachment_context', true);
+        if($context!="custom-header"){
+          // Different type of post, different ways to load contents
+          if($post->post_type=='attachment'){
+            $attachment_link = get_attachment_link($post->ID);
+            $attachment_thumb = wp_get_attachment_thumb_url($post->ID);
+            $media_type = 'photo';
+          }
+          else {
+            $attachment_link = get_post_permalink($post->ID);
+            $video_thumbnail = get_post_meta($post->ID, 'video_thumbnail', true);
+            $attachment_thumb = $video_thumbnail;
+            $media_type = 'video';
+          }
+          // In our media, excerpt is caption
+          $media_caption = $post->post_excerpt;
+          // In our media, description is post content
+          $media_description = $post->post_content;
+
+          // Load template from file, redirect echo into string
+          ob_start();
+          load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
+          $html .= ob_get_contents();
+          ob_end_clean();
         }
-        else {
-          $attachment_link = get_post_permalink($post->ID);
-          $video_thumbnail = get_post_meta($post->ID, 'video_thumbnail', true);
-          $attachment_thumb = $video_thumbnail;
-          $media_type = 'video';
-        }
-        // In our media, excerpt is caption
-        $media_caption = $post->post_excerpt;
-        // In our media, description is post content
-        $media_description = $post->post_content;
-        
-        // Load template from file, redirect echo into string
-        ob_start();
-        load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
-        $html .= ob_get_contents();
-        ob_end_clean();
       }
     }
 
