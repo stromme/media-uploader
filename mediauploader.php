@@ -598,14 +598,18 @@ class The_Media_Uploader {
    * @action
    * @return void
    */
-  public function media_manage_list_media($template){
+  public function media_manage_list_media($template, $type=''){
     /* Set global for usage in template */
     global $attachment_link, $attachment_thumb, $attachment_id, $media_type, $media_caption, $media_description;
     $html = '';
 
-    // Load 100 items of these types of video with any post status
+    if($type=='photos') $post_type = array('attachment');
+    else if($type=='videos') $post_type = array('videos');
+    else $post_type = array('attachment', 'videos');
+    
+    // Load all items of these types of video with any post status
     $args = array(
-      'post_type' => array('attachment', 'videos'),
+      'post_type' => $post_type,
       'numberposts' => -1,
       'post_status' => 'any',
       'post_parent' => 0

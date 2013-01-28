@@ -326,44 +326,37 @@ $( document ).ready( function() {
  */
 function add_video(video_link, data_target, data_template, success_callback, failed_callback){
   // If video link is not empty (validate on server side later)
-  if(video_link && video_link.length>0){
-    var data = {
-      action: 'add_video',
-      'video_link': video_link,
-      'template': data_template
-    };
-    // Set target element list container
-    var target = $('#'+data_target);
-    // Prepend new list but at first just show the loading spinner
-    target.prepend('<li class="new_thumb_video"><a><span class="loader"></span></a></li>');
-    $('.new_thumb_video .loader', target).spin('medium-left', '#000000');
+  var data = {
+    action: 'add_video',
+    'video_link': video_link,
+    'template': data_template
+  };
+  // Set target element list container
+  var target = $('#'+data_target);
+  // Prepend new list but at first just show the loading spinner
+  target.prepend('<li class="new_thumb_video"><a><span class="loader"></span></a></li>');
+  $('.new_thumb_video .loader', target).spin('medium-left', '#000000');
 
-    // Post the video link via ajax
-    $.post(ajaxurl, data, function(response) {
-      var json_response = JSON.parse(response);
-      if(json_response.status==1){
-        // If success, replace our newly created list with real content
-        $('li.new_thumb_video', target).replaceWith(json_response.html);
-        if(typeof(success_callback)=='function') success_callback();
-      }
-      else {
-        // If failed remove our newly created list
-        $('li.new_thumb_video', target).fadeOut(300, function(){$(this).remove();});
-        bootstrap_alert(json_response.status_message, 'error');
-        if(typeof(failed_callback)=='function') failed_callback();
-      }
-    })
-    .error(function() {
-      $('.new_thumb_video').remove();
-      bootstrap_alert("Connection error", 'error');
+  // Post the video link via ajax
+  $.post(ajaxurl, data, function(response) {
+    var json_response = JSON.parse(response);
+    if(json_response.status==1){
+      // If success, replace our newly created list with real content
+      $('li.new_thumb_video', target).replaceWith(json_response.html);
+      if(typeof(success_callback)=='function') success_callback();
+    }
+    else {
+      // If failed remove our newly created list
+      $('li.new_thumb_video', target).fadeOut(300, function(){$(this).remove();});
+      bootstrap_alert(json_response.status_message, 'error');
       if(typeof(failed_callback)=='function') failed_callback();
-    });
-  }
-  // If input is empty
-  else {
-    bootstrap_alert('Please paste video embed URL', 'error');
+    }
+  })
+  .error(function() {
+    $('.new_thumb_video').remove();
+    bootstrap_alert("Connection error", 'error');
     if(typeof(failed_callback)=='function') failed_callback();
-  }
+  });
 }
 
 /**
