@@ -39,6 +39,7 @@ class The_Media_Uploader {
     add_action('wp_ajax_delete_media', array($this, 'delete_media_callback'));
     add_action('wp_ajax_tag_media', array($this, 'tag_media_callback'));
     add_action('wp_ajax_add_video', array($this, 'add_video_callback'));
+    add_action('wp_ajax_delete_media_taxonomy', array($this, 'delete_media_taxonomy_callback'));
   }
 
   /**
@@ -592,15 +593,28 @@ class The_Media_Uploader {
   }
 
   /**
+   * Ajax function to clear a media taxonomy
+   *
+   * @return void
+   */
+  public function delete_media_taxonomy_callback(){
+    $post_id = $_POST['post_id'];
+    $taxonomy = $_POST['taxonomy'];
+    wp_set_object_terms($post_id, array(), $taxonomy, FALSE);
+    // Return ajax response as json string
+    die(json_encode(array('status'=>1,'status_message'=>'Media term deleted')));
+  }
+
+  /**
    * Public function for pre loading exsisting media and show it on manage media module
    *
    * @uses get_posts, get_attachment_link, wp_get_attachment_thumb_url, get_post_permalink, get_post_meta, load_template, ob_start, ob_end_clean, ob_get_contents
    * @action
-   * @return void
+   * @return string
    */
-  public function media_manage_list_media($template, $type='', $media_taxonomy=null, $media_term=null){
+  public function media_manage_list_media($template, $type='', $media_taxonomy=null, $media_terms=null){
     /* Set global for usage in template */
-    global $attachment_link, $attachment_thumb, $attachment_id, $media_type, $media_caption, $media_description;
+    global $attachment_link, $attachment_thumb, $attachment_id, $media_type, $media_caption, $media_description, $taxonomy;
     $html = '';
 
     if($type=='photos') $post_type = array('attachment');
@@ -615,7 +629,7 @@ class The_Media_Uploader {
       'post_parent' => 0
     );
     if($media_taxonomy){
-      $args[$media_taxonomy] = $media_term;
+      if(!is_array($media_terms)) $args[$media_taxonomy] = $media_terms;
     }
     // Do get it
     $posts = get_posts($args);
@@ -623,19 +637,18 @@ class The_Media_Uploader {
     // Post loaded
     if($posts){
       foreach ($posts as $post) {
-        // FIlls variable content
         $attachment_id = $post->ID;
-        $context = get_post_meta($post->ID, '_wp_attachment_context', true);
+        $context = get_post_meta($attachment_id, '_wp_attachment_context', true);
         if($context!="custom-header"){
           // Different type of post, different ways to load contents
           if($post->post_type=='attachment'){
-            $attachment_link = get_attachment_link($post->ID);
-            $attachment_thumb = wp_get_attachment_thumb_url($post->ID);
+            $attachment_link = get_attachment_link($attachment_id);
+            $attachment_thumb = wp_get_attachment_thumb_url($attachment_id);
             $media_type = 'photo';
           }
           else {
-            $attachment_link = get_post_permalink($post->ID);
-            $video_thumbnail = get_post_meta($post->ID, 'video_thumbnail', true);
+            $attachment_link = get_post_permalink($attachment_id);
+            $video_thumbnail = get_post_meta($attachment_id, 'video_thumbnail', true);
             $attachment_thumb = $video_thumbnail;
             $media_type = 'video';
           }
@@ -644,11 +657,24 @@ class The_Media_Uploader {
           // In our media, description is post content
           $media_description = $post->post_content;
 
-          // Load template from file, redirect echo into string
-          ob_start();
-          load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
-          $html .= ob_get_contents();
-          ob_end_clean();
+          if($media_taxonomy && is_array($media_terms)){
+            $terms = wp_get_post_terms($attachment_id, $media_taxonomy);
+            if(in_array($terms[0]->slug, $media_terms)){
+              // Load template from file, redirect echo into string
+              ob_start();
+              load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
+              $html .= ob_get_contents();
+              ob_end_clean();
+            }
+          }
+          else {
+            if($media_taxonomy && !is_array($media_terms)) $taxonomy = $media_taxonomy;
+            // Load template from file, redirect echo into string
+            ob_start();
+            load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
+            $html .= ob_get_contents();
+            ob_end_clean();
+          }
         }
       }
     }
