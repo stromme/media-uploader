@@ -598,7 +598,7 @@ class The_Media_Uploader {
    * @action
    * @return void
    */
-  public function media_manage_list_media($template, $type=''){
+  public function media_manage_list_media($template, $type='', $media_taxonomy=null, $media_term=null){
     /* Set global for usage in template */
     global $attachment_link, $attachment_thumb, $attachment_id, $media_type, $media_caption, $media_description;
     $html = '';
@@ -614,6 +614,9 @@ class The_Media_Uploader {
       'post_status' => 'any',
       'post_parent' => 0
     );
+    if($media_taxonomy){
+      $args[$media_taxonomy] = $media_term;
+    }
     // Do get it
     $posts = get_posts($args);
 
@@ -649,6 +652,35 @@ class The_Media_Uploader {
         }
       }
     }
+
+    // Returns the html for list of media
+    return $html;
+  }
+
+  /**
+   * Get media template
+   *
+   * @uses load_template, ob_start, ob_end_clean, ob_get_contents
+   * @action
+   * @return void
+   */
+  public function get_media_template($template, $name){
+    /* Set global for usage in template */
+    global $attachment_link, $attachment_thumb, $attachment_id, $media_type, $media_caption, $media_description;
+    $html = '';
+
+    $attachment_id = 'template'.(($name)?'-'.$name:'');
+    $attachment_link = '';
+    $attachment_thumb = '';
+    $media_type = '';
+    $media_caption = '';
+    // In our media, description is post content
+    $media_description = '';
+    // Load template from file, redirect echo into string
+    ob_start();
+    load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
+    $html .= ob_get_contents();
+    ob_end_clean();
 
     // Returns the html for list of media
     return $html;

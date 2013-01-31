@@ -24,20 +24,6 @@
   margin-top: 5px;
 }
 
-/* Spinner style */
-
-.button-side-loader {
-  display: inline-block;
-  padding: 4px 0;
-  width: 40px;
-}
-
-.field-side-loader {
-  display: inline-block;
-  padding: 14px 5px 0 5px;
-  width: 40px;
-}
-
 /* Logo image uploader box style */
 
 .logo-loader {
@@ -86,10 +72,4 @@
   float: right;
   width: 33px;
   padding-top: 10px;
-}
-
-/* Control group class extend */
-
-.input-validation.control-group {
-  margin-bottom: 5px;
 }

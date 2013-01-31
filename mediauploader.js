@@ -3,7 +3,7 @@
 /**
  * The media uploader jQuery plugin, this one is for photo upload
  */
-$.fn.mediauploader = function(options) {
+$.fn.mediauploader = function() {
   // Initialize our variables
   return this.each(function() {
     var elm = $(this);
@@ -308,7 +308,7 @@ $.fn.accoladeuploader = function() {
  * Ready, set, go!
  */
 $( document ).ready( function() {
-  $('button.add-media,input[type="button"].add-media').filter(function(){return !$(this).hasClass('add-video');}).mediauploader();
+  $('.add-media').filter(function(){return !$(this).hasClass('add-video');}).mediauploader();
   $('button.change-logo,input[type="button"].change-logo').logouploader();
 });
 
@@ -333,50 +333,37 @@ function add_video(video_link, data_target, data_template, success_callback, fai
   };
   // Set target element list container
   var target = $('#'+data_target);
-  // Prepend new list but at first just show the loading spinner
-  target.prepend('<li class="new_thumb_video"><a><span class="loader"></span></a></li>');
-  $('.new_thumb_video .loader', target).spin('medium-left', '#000000');
 
-  // Post the video link via ajax
-  $.post(ajaxurl, data, function(response) {
+  var post = new AjaxPost(data, {
+    'spinner': new LoadingSpinner({
+      'reference_elm': target,
+      'insert_method': 'prepend',
+      'loader_tag': 'li',
+      'loader_style': ' ',
+      'spinner_style': ' ',
+      'spinner_wrapping': '<a></a>',
+      'no_hide': true
+    })
+  },
+  // Ajax replied
+  function(response){
     var json_response = JSON.parse(response);
     if(json_response.status==1){
       // If success, replace our newly created list with real content
-      $('li.new_thumb_video', target).replaceWith(json_response.html);
+      post.spinner.spinner.replaceWith(json_response.html);
       if(typeof(success_callback)=='function') success_callback();
     }
     else {
       // If failed remove our newly created list
-      $('li.new_thumb_video', target).fadeOut(300, function(){$(this).remove();});
+      post.spinner.spinner.fadeOut(300, function(){$(this).remove();});
       bootstrap_alert(json_response.status_message, 'error');
       if(typeof(failed_callback)=='function') failed_callback();
     }
-  })
-  .error(function() {
-    $('.new_thumb_video').remove();
-    bootstrap_alert("Connection error", 'error');
-    if(typeof(failed_callback)=='function') failed_callback();
+  },
+  function(){
+    post.spinner.spinner.remove();
   });
-}
-
-/**
- * Function for showing the spinner when in progress of deleting media
- */
-function show_delete_media_spinner(){
-  // Show spinner beside the buttons, prepend on button's parent div
-  $("#confirm-delete-media").parent().prepend('<span id="mailboxes-deletemedia-loader" class="button-side-loader"><span class="loader"></span></span>');
-  $('#mailboxes-deletemedia-loader .loader').spin('medium-left', '#000000');
-  $('#mailboxes-deletemedia-loader').fadeIn(300);
-}
-
-/**
- * Function for showing the spinner when in progress of updating media tag
- */
-function show_media_tag_spinner(){
-  // Show spinner beside the buttons, prepend on button's parent div
-  $("#confirm-tag").parent().prepend('<span id="media-tag-loader" class="button-side-loader"><span class="loader"></span></span>');
-  $('#media-tag-loader .loader').spin('medium-left', '#000000');
-  $('#media-tag-loader').fadeIn(300);
+  post.doAjaxPost();
 }
 
 /**
@@ -394,30 +381,27 @@ function confirm_delete_media(media_id, media_type, success_callback, failed_cal
     'media_id': media_id,
     'media_type': media_type
   };
-
-  // Show spinner while waiting
-  show_delete_media_spinner();
-  $.post(ajaxurl, data, function(response) {
+  var container = $("#delete-confirm");
+  var button = $('.action-confirm', container);
+  var post = new AjaxPost(data, {
+    'spinner': new LoadingSpinner({
+      'reference_elm': button,
+      'insert_method': 'prepend',
+      'in_parent': true
+    })
+  },
+  // Ajax replied
+  function(response){
     var json_response = JSON.parse(response);
-    // Remove spinner first by hiding it then remove the element
-    $('#mailboxes-deletemedia-loader').fadeOut(300, function(){
-      $(this).remove();
-      if(json_response.status==1){
-        if(typeof(success_callback)=='function') success_callback();
-      }
-      else {
-        bootstrap_alert(json_response.status_message, 'error');
-        if(typeof(failed_callback)=='function') failed_callback();
-      }
-    });
-  })
-  .error(function() {
-    $('#mailboxes-deletemedia-loader').fadeOut(200, function(){
-      $(this).remove();
-      bootstrap_alert("Connection error", 'error');
+    if(json_response.status==1){
+      if(typeof(success_callback)=='function') success_callback();
+    }
+    else {
+      bootstrap_alert(json_response.status_message, 'error');
       if(typeof(failed_callback)=='function') failed_callback();
-    });
+    }
   });
+  post.doAjaxPost();
 }
 
 /**
@@ -439,7 +423,8 @@ function confirm_tag_media(media_id, media_type, media_caption, media_descriptio
   if(media_description && media_description.length>0){
     exists = true;
   }
-
+  var container = $('#tag-media');
+  var button = $('.save', container);
   // If any of the content not empty (either caption or description)
   if(exists){
     var data = {
@@ -449,32 +434,33 @@ function confirm_tag_media(media_id, media_type, media_caption, media_descriptio
       'media_caption': media_caption,
       'media_description': media_description
     };
-    
-    // Show spinner while waiting
-    show_media_tag_spinner();
-    $.post(ajaxurl, data, function(response) {
+    var post = new AjaxPost(data, {
+      'spinner': new LoadingSpinner({
+        'reference_elm': button,
+        'insert_method': 'prepend',
+        'in_parent': true
+      })
+    },
+    // Ajax replied
+    function(response){
       var json_response = JSON.parse(response);
-      // Remove spinner first
-      $('#media-tag-loader').fadeOut(300, function(){
-        $(this).remove();
-        if(json_response.status==1){
-          bootstrap_alert(json_response.status_message, 'success');
-          // Do success callback if updating is success
-          if(typeof(success_callback)=='function') success_callback();
-        }
-        else {
-          bootstrap_alert(json_response.status_message, 'error');
-          if(typeof(failed_callback)=='function') failed_callback();
-        }
-      });
-    })
-    .error(function() {
-      $('#media-tag-loader').fadeOut(200, function(){
-        $(this).remove();
-        bootstrap_alert("Connection error", 'error');
+      if(json_response.status==1){
+        bootstrap_alert(json_response.status_message, 'success');
+        // Do success callback if updating is success
+        if(typeof(success_callback)=='function') success_callback();
+      }
+      else {
+        bootstrap_alert(json_response.status_message, 'error');
         if(typeof(failed_callback)=='function') failed_callback();
-      });
+      }
+    },
+    function(){
+      if(typeof(failed_callback)=='function') failed_callback();
     });
+    post.doAjaxPost();
+  }
+  else {
+    if(typeof(failed_callback)=='function') failed_callback();
   }
   // else do nothing if both inputs are empty
 }
