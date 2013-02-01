@@ -121,8 +121,6 @@ $.fn.logouploader = function(options) {
         elmBaseSettings["file_data_name"] = 'file_'+elm.attr('id');
         elmBaseSettings["multipart_params"]["img_id"] = elm.attr('id');
         elmBaseSettings["multipart_params"]["action"] = "logo_plupload_action";
-//        elmBaseSettings["resize"]["width"] = "500";
-//        elmBaseSettings["resize"]["height"] = "1200";
         var logo_uploader = new plupload.Uploader(elmBaseSettings);
         logo_uploader.init();
 
@@ -310,6 +308,66 @@ $.fn.accoladeuploader = function() {
 $( document ).ready( function() {
   $('.add-media').filter(function(){return !$(this).hasClass('add-video');}).mediauploader();
   $('button.change-logo,input[type="button"].change-logo').logouploader();
+
+  /* Delete media confirmation */
+  $('.thumb-trash').live('click', function(e) {
+    e.preventDefault();
+    var container  = $('#delete-confirm');
+    var button     = $('.action-confirm', container);
+    var list       = $(this).closest('li');
+    var media_id   = list.attr('media-id');
+    var media_type = list.attr('media-type');
+    container.modal();
+    button.unbind('click').click(function(e) {
+      e.preventDefault();
+      if (!button.hasClass('disabled')) {
+        button.addClass('disabled');
+        confirm_delete_media(media_id, media_type, function() {
+          setTimeout(function(){
+            list.fadeOut(300, function() {
+              $(this).remove();
+            });
+          }, 600);
+          container.modal('hide');
+          button.removeClass('disabled');
+        }, function() {
+          button.removeClass('disabled');
+        });
+      }
+    });
+  });
+
+  /* Open tag media form */
+  $('.action-tag-media').live('click', function(e) {
+    var container = $('#tag-media');
+    var button = $('.save', container);
+    var list = $(this).closest('li');
+    var media_id = list.attr('media-id');
+    var media_type = list.attr('media-type');
+    var media_caption = $('#media-caption');
+    var media_description = $('#media-description');
+    media_caption.val(list.attr('media-caption'));
+    media_description.val(list.attr('media-description'));
+    container.modal();
+    /* Do save media tag */
+    button.unbind('click').click(function(e) {
+      e.preventDefault();
+      if (!button.hasClass('disabled')) {
+        button.addClass('disabled');
+        confirm_tag_media(media_id, media_type, media_caption.val(), media_description.val(), function() {
+          container.modal('hide');
+          list.attr('media-caption', media_caption.val());
+          list.attr('media-description', media_description.val());
+          // Reset the form
+          media_caption.val('');
+          media_description.val('');
+          button.removeClass('disabled');
+        }, function() {
+          button.removeClass('disabled');
+        });
+      }
+    });
+  });
 });
 
 })(jQuery);

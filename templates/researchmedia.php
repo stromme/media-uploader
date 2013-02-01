@@ -9,10 +9,10 @@
     <img src="<?=$template_params['attachment_thumb']?>" id="thumb_<?=$attachment_id?>" class="fade in" />
     <?php
       if($template_params['media_type']=='photo'){
-        echo '<div class="icon-camera-2x fade"></div>';
+        echo '<div class="icon-camera-2x fade media-type-icon"></div>';
       }
       else {
-        echo '<div class="icon-play-2x fade"></div>';
+        echo '<div class="icon-play-2x fade media-type-icon"></div>';
       }
     ?>
   </a>
