@@ -19,7 +19,7 @@
   <div class="pull-left">
     <?php
      if($media_caption!=""){
-       echo substr($media_caption, 0, 23).((strlen($media_caption)>23)?'...':'');
+       echo substr($media_caption, 0, 18).((strlen($media_caption)>18)?'...':'');
      }
      else {
        echo "<em>No caption</em>";
