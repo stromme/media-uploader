@@ -104,7 +104,7 @@ class The_Media_Uploader {
    */
   function g_plupload_action() {
     // Globalize variable tobe able to access in the template
-    global $attachment_id, $attachment_link, $attachment_thumb, $media_type;
+    global $template_params;
 
     $img_id = $_POST["img_id"];
     $post_id = $_POST["post_id"];
@@ -135,10 +135,9 @@ class The_Media_Uploader {
       $attach_data = wp_generate_attachment_metadata($attach_id, $path);
       wp_update_attachment_metadata($attach_id,$attach_data);
       // Get permalink (in case needed), this also creates many file with various sizes
-      $attachment_id = $attach_id;
-      $attachment_link = get_attachment_link($attach_id);
-      $attachment_thumb = wp_get_attachment_thumb_url($attach_id); // Get thumbnail url
-      $media_type = "photo";
+      $template_params['attachment_id'] = $attach_id;
+      $template_params['attachment_thumb'] = wp_get_attachment_thumb_url($attach_id); // Get thumbnail url
+      $template_params['media_type'] = "photo";
       // Redirect echo into string
       ob_start();
       // Load those variables into our template
@@ -163,9 +162,6 @@ class The_Media_Uploader {
    * @return null
    */
   function g_logo_plupload_action() {
-    // Globalize variable tobe able to access in the template
-    global $attachment_id, $attachment_link, $attachment_thumb, $media_type;
-
     $img_id = $_POST["img_id"];
 
     // Handle file upload
@@ -192,8 +188,6 @@ class The_Media_Uploader {
       $attach_data = wp_generate_attachment_metadata($attach_id, $path);
       wp_update_attachment_metadata($attach_id,$attach_data);
       // Get permalink (in case needed), this also creates many file with various sizes
-      $attachment_id = $attach_id;
-      $attachment_link = get_attachment_link($attach_id);
       $image = wp_get_image_editor($status["file"]); // Return an implementation that extends <tt>WP_Image_Editor</tt>
       if(!is_wp_error($image)){
         $image->resize(250, 200, true);
@@ -252,7 +246,6 @@ class The_Media_Uploader {
    */
   function g_accolade_plupload_action() {
     // Globalize variable tobe able to access in the template
-    global $attachment_id, $attachment_link, $attachment_thumb, $media_type;
 
     $img_id = $_POST["img_id"];
     $old_id = $_POST["current_id"];
@@ -399,7 +392,7 @@ class The_Media_Uploader {
    * @return shortcode string
    */
   function media_uploader_shortcode($atts){
-    global $attachment_id, $attachment_link, $attachment_thumb;
+    global $template_params;
     
     $string = 'You must login wordpress to see this code running. <a href="/wpmulti/wp-admin">Here</a>';
     if(is_user_logged_in()){
@@ -421,9 +414,9 @@ class The_Media_Uploader {
       if ($attachments) {
         foreach ($attachments as $attachment) {
           // FIlls variable content
-          $attachment_id = $attachment->ID;
-          $attachment_link = get_attachment_link($attachment->ID);
-          $attachment_thumb = wp_get_attachment_thumb_url($attachment->ID);
+          $template_params['attachment_id'] = $attachment->ID;
+          $template_params['attachment_link'] = get_attachment_link($attachment->ID);
+          $template_params['attachment_thumb'] = wp_get_attachment_thumb_url($attachment->ID);
           // Redirect echo into string
           ob_start();
           load_template(plugin_dir_path(__FILE__).'templates/'.$atts["template"].'.php', false);
@@ -446,7 +439,7 @@ class The_Media_Uploader {
    */
   function add_video_callback(){
     /* Set global for usage in template */
-    global $attachment_id, $attachment_link, $attachment_thumb, $media_type, $media_caption, $media_description;
+    global $template_params;
     $video_link = $_POST['video_link'];
     $template = $_POST['template'];
     $html = '';
@@ -486,12 +479,11 @@ class The_Media_Uploader {
         add_post_meta($post_id, 'video_thumbnail', $video_thumbnail);
 
         // Fill variables value for template
-        $attachment_id = $post_id;
-        $attachment_link = '';
-        $attachment_thumb = $video_thumbnail;
-        $media_type = 'video';
-        $media_caption = '';
-        $media_description = '';
+        $template_params['attachment_id'] = $post_id;
+        $template_params['attachment_thumb'] = $video_thumbnail;
+        $template_params['media_type'] = 'video';
+        $template_params['media_caption'] = '';
+        $template_params['media_description'] = '';
 
         // Get template, redirect echo into string
         ob_start();
@@ -614,7 +606,7 @@ class The_Media_Uploader {
    */
   public function media_manage_list_media($template, $type='', $media_taxonomy=null, $media_terms=null){
     /* Set global for usage in template */
-    global $attachment_link, $attachment_thumb, $attachment_id, $media_type, $media_caption, $media_description, $taxonomy;
+    global $template_params;
     $html = '';
 
     if($type=='photos') $post_type = array('attachment');
@@ -638,24 +630,23 @@ class The_Media_Uploader {
     if($posts){
       foreach ($posts as $post) {
         $attachment_id = $post->ID;
+        $template_params['attachment_id'] = $post->ID;
         $context = get_post_meta($attachment_id, '_wp_attachment_context', true);
         if($context!="custom-header"){
           // Different type of post, different ways to load contents
           if($post->post_type=='attachment'){
-            $attachment_link = get_attachment_link($attachment_id);
-            $attachment_thumb = wp_get_attachment_thumb_url($attachment_id);
-            $media_type = 'photo';
+            $template_params['attachment_thumb'] = wp_get_attachment_thumb_url($attachment_id);
+            $template_params['media_type'] = 'photo';
           }
           else {
-            $attachment_link = get_post_permalink($attachment_id);
             $video_thumbnail = get_post_meta($attachment_id, 'video_thumbnail', true);
-            $attachment_thumb = $video_thumbnail;
-            $media_type = 'video';
+            $template_params['attachment_thumb'] = $video_thumbnail;
+            $template_params['media_type'] = 'video';
           }
           // In our media, excerpt is caption
-          $media_caption = $post->post_excerpt;
+          $template_params['media_caption'] = $post->post_excerpt;
           // In our media, description is post content
-          $media_description = $post->post_content;
+          $template_params['media_description'] = $post->post_content;
 
           if($media_taxonomy && is_array($media_terms)){
             $terms = wp_get_post_terms($attachment_id, $media_taxonomy);
@@ -668,7 +659,7 @@ class The_Media_Uploader {
             }
           }
           else {
-            if($media_taxonomy && !is_array($media_terms)) $taxonomy = $media_taxonomy;
+            if($media_taxonomy && !is_array($media_terms)) $template_params['taxonomy'] = $media_taxonomy;
             // Load template from file, redirect echo into string
             ob_start();
             load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
@@ -692,16 +683,14 @@ class The_Media_Uploader {
    */
   public function get_media_template($template, $name){
     /* Set global for usage in template */
-    global $attachment_link, $attachment_thumb, $attachment_id, $media_type, $media_caption, $media_description;
+    global $template_params;
     $html = '';
-
-    $attachment_id = 'template'.(($name)?'-'.$name:'');
-    $attachment_link = '';
-    $attachment_thumb = '';
-    $media_type = '';
-    $media_caption = '';
+    $template_params['attachment_id'] = 'template'.(($name)?'-'.$name:'');
+    $template_params['attachment_thumb'] = '';
+    $template_params['media_type'] = '';
+    $template_params['media_caption'] = '';
     // In our media, description is post content
-    $media_description = '';
+    $template_params['media_description'] = '';
     // Load template from file, redirect echo into string
     ob_start();
     load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);

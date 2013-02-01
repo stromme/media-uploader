@@ -1,8 +1,13 @@
-<?php global $attachment_link, $attachment_thumb, $attachment_id, $media_type, $media_caption, $media_description, $taxonomy; ?>
+<?php
+  global $template_params;
+  $attachment_id = $template_params['attachment_id'];
+  $media_type    = $template_params['media_type'];
+  $taxonomy      = $template_params['taxonomy'];
+?>
 
-<li media-id="<?=$attachment_id?>" media-type="<?=$media_type?>" media-caption="<?=$media_caption?>" media-description="<?=$media_description?>"<?=($taxonomy && $taxonomy!="")?'taxonomy="'.$taxonomy.'"':""?>>
+<li media-id="<?=$attachment_id?>" media-type="<?=$media_type?>" media-caption="<?=$template_params['media_caption']?>" media-description="<?=$template_params['media_description']?>"<?=($taxonomy && $taxonomy!="")?'taxonomy="'.$taxonomy.'"':""?>>
   <a class="thumbnail">
-    <img src="<?=$attachment_thumb?>" id="thumb_<?=$attachment_id?>" />
+    <img src="<?=$template_params['attachment_thumb']?>" id="thumb_<?=$attachment_id?>" />
     <div class="thumb-trash"><i class="icon-trash"></i></div>
   </a>
   <div class="pull-right">

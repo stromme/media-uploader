@@ -1,8 +1,12 @@
-<?php global $attachment_link, $attachment_thumb, $attachment_id, $media_type, $media_caption, $media_description; ?>
+<?php
+  global $template_params;
+  $attachment_id = $template_params['attachment_id'];
+  $media_caption = $template_params['media_caption'];
+?>
 
-<li media-id="<?=$attachment_id?>" media-type="<?=$media_type?>" media-caption="<?=$media_caption?>" media-description="<?=$media_description?>">
+<li media-id="<?=$attachment_id?>" media-type="<?=$template_params['media_type']?>" media-caption="<?=$media_caption?>" media-description="<?=$template_params['media_description']?>">
   <a href="#" class="thumbnail research-media">
-    <img src="<?=$attachment_thumb?>" id="thumb_<?=$attachment_id?>" />
+    <img src="<?=$template_params['attachment_thumb']?>" id="thumb_<?=$attachment_id?>" />
   </a>
   <div class="pull-left">
     <?php
