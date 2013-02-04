@@ -339,6 +339,7 @@ $( document ).ready( function() {
 
   /* Open tag media form */
   $('.action-tag-media').live('click', function(e) {
+    e.preventDefault();
     var container = $('#tag-media');
     var button = $('.save', container);
     var list = $(this).closest('li');
@@ -441,12 +442,16 @@ function confirm_delete_media(media_id, media_type, success_callback, failed_cal
   };
   var container = $("#delete-confirm");
   var button = $('.action-confirm', container);
-  var post = new AjaxPost(data, {
-    'spinner': new LoadingSpinner({
+  var spinner = false;
+  if(container && button && button.length>0){
+    spinner = new LoadingSpinner({
       'reference_elm': button,
       'insert_method': 'prepend',
       'in_parent': true
     })
+  }
+  var post = new AjaxPost(data, {
+    'spinner': spinner
   },
   // Ajax replied
   function(response){
