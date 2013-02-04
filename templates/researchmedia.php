@@ -12,7 +12,7 @@
         echo '<div class="icon-camera-2x fade media-type-icon"></div>';
       }
       else {
-        echo '<div class="icon-play-2x fade media-type-icon"></div>';
+        echo '<div class="icon-film-2x fade media-type-icon"></div>';
       }
     ?>
   </a>
