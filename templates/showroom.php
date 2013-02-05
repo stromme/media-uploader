@@ -14,12 +14,10 @@
   </a>
   <div class="pull-right">
     <?php
-    if($media_type=='photo'){
-      if ($template_params['favorite']) {
-        echo '<div class="thumb-favorite thumb-favorite-selected" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Your favorite photo of this project."><i class="icon-ok icon-white"></i></div>';
-      } else {
-        echo '<div class="thumb-favorite" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Mark the photo as your favorite."><i class="icon-ok icon-white"></i></div>';
-      }
+    if ($template_params['favorite']) {
+      echo '<div class="thumb-favorite thumb-favorite-selected" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Your favorite photo of this project."><i class="icon-ok icon-white"></i></div>';
+    } else {
+      echo '<div class="thumb-favorite" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Mark the photo as your favorite."><i class="icon-ok icon-white"></i></div>';
     }
     ?>
     <a href="javascript:void(0);" class="action-tag-media preventDefault" >Describe this <?=$media_type?> </a><icon class="icon-tags"></icon>
