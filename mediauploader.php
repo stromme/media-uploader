@@ -29,8 +29,10 @@ class The_Media_Uploader {
 
   /* Plugin Construction */
   function __construct() {
-    add_shortcode("media-uploader", array($this,"media_uploader_shortcode"));
-    add_action('template_redirect', array($this, 'action_load_dependencies'));
+    //add_shortcode("media-uploader", array($this,"media_uploader_shortcode"));
+    // Set priority lower than enqueue action in theme-settings,
+    // so we can check if a script has been enqueued
+    add_action('wp_enqueue_scripts', array($this, 'action_enqueue_scripts'), 11);
     add_action('admin_menu', array($this, 'action_admin_menu'));
     add_action('wp_ajax_plupload_action', array($this, 'g_plupload_action'));
     add_action('wp_ajax_logo_plupload_action', array($this, 'g_logo_plupload_action'));
@@ -43,15 +45,17 @@ class The_Media_Uploader {
   }
 
   /**
-   * Load all required files for the plugin to run.
+   * Load javascript for the plugin.
    *
-   * @uses wp_enqueue_script, plugins_url, add_action, get_option, wp_localize_script, wp_enqueue_style, includes_url
+   * @uses wp_script_is, wp_enqueue_script, plugins_url, add_action, get_option, wp_localize_script, wp_enqueue_style, includes_url
    * @action template_redirect
    * @return null
    */
-  function action_load_dependencies() {
-    wp_enqueue_script('the-media-uploader-spinner', plugins_url('spinner.min.js', __FILE__), array('jquery'), '20121205');
+  function action_enqueue_scripts(){
+    if(!wp_script_is('toolbox-spinner'))
+      wp_enqueue_script('toolbox-spinner', plugins_url('spinner.min.js', __FILE__), array('jquery'), '20121205');
     wp_enqueue_script('the-media-uploader', plugins_url('mediauploader.js', __FILE__), array('plupload-all'), '20121205');
+
     $settings = get_option('mediauploader_settings');
     if(!$settings){
       $settings = array(
