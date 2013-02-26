@@ -36,6 +36,7 @@ class The_Media_Uploader {
     add_action('admin_menu', array($this, 'action_admin_menu'));
     add_action('wp_ajax_plupload_action', array($this, 'g_plupload_action'));
     add_action('wp_ajax_logo_plupload_action', array($this, 'g_logo_plupload_action'));
+    add_action('wp_ajax_user_photo_plupload_action', array($this, 'g_user_photo_plupload_action'));
     add_action('wp_ajax_accolade_plupload_action', array($this, 'g_accolade_plupload_action'));
     /* Used in toolbox manage media module */
     add_action('wp_ajax_delete_media', array($this, 'delete_media_callback'));
@@ -231,6 +232,67 @@ class The_Media_Uploader {
       add_theme_support('custom-header', $args);
 			set_theme_mod( 'header_image', $status['url'] );
 			set_theme_mod( 'header_image_data', $args );
+
+      $status["status_code"] = 1;
+
+      // Destroy used attachment variables
+      unset($attach_id, $attach_data, $attachment_data, $file, $path);
+    }
+    echo json_encode($status);
+    exit;
+  }
+
+  /**
+   * Removing existing user photo, add new uploaded image, and set it as user photo
+   *
+   * @uses wp_handle_upload, wp_generate_attachment_metadata, wp_update_attachment_metadata, get_attachment_link, wp_get_image_editor, wp_delete_attachment, add_post_meta, json_encode
+   * @action wp_ajax_logo_plupload_action
+   * @return null
+   */
+  function g_user_photo_plupload_action() {
+    $img_id = $_POST["img_id"];
+
+    // Handle file upload
+    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => true, 'action' => 'user_photo_plupload_action'));
+    $status["status_code"] = 0;
+
+    // If status is containing minimum 3 parameter: url, uri, and type
+    if(count($status)>2){
+      $image = $status["url"];
+      $wp_upload_dir = wp_upload_dir(); // Get the wp upload dir
+      $file = basename($image); // Grab just filename
+      $path = $wp_upload_dir['path'].'/'.$file; // Create URI
+      $wp_filetype = wp_check_filetype($file); // Get MIME type
+      // Create attachment data
+      $attachment_data = array(
+        'guid' => $image,
+        'post_mime_type' => $wp_filetype['type'],
+        'post_title' => preg_replace('/\.[^.]+$/','', $file)
+      );
+      //These 4 lines actually insert the attachment into the Media Library using the attachment_data array created above.
+      $attach_id = wp_insert_attachment($attachment_data, $path, 0);
+      //Yes, you do "require" the following line of code
+      require_once(ABSPATH."wp-admin".'/includes/image.php');
+      $attach_data = wp_generate_attachment_metadata($attach_id, $path);
+      wp_update_attachment_metadata($attach_id,$attach_data);
+      // Get permalink (in case needed), this also creates many file with various sizes
+      $image = wp_get_image_editor($status["file"]); // Return an implementation that extends <tt>WP_Image_Editor</tt>
+      if(!is_wp_error($image)){
+        $image->resize(200, 200, true);
+        $image->save($status["file"]);
+      }
+
+      $user_id = get_current_user_id();
+      $current_photo = get_user_meta($user_id, 'attachment_id', true);
+      // Remove all existing user photo
+      if($current_photo!=''){
+        wp_delete_attachment($current_photo, true);
+      }
+
+      delete_user_meta($user_id, 'attachment_id');
+      update_user_meta($user_id, 'attachment_id', $attach_id);
+      delete_user_meta($user_id, 'user_photo_type');
+      update_user_meta($user_id, 'user_photo_type', 'upload');
 
       $status["status_code"] = 1;
 

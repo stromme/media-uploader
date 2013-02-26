@@ -196,6 +196,109 @@ $.fn.logouploader = function(options) {
 };
 
 /**
+ * The media uploader jQuery plugin, this one is for user account photo upload
+ */
+$.fn.userphotouploader = function(options) {
+  // Initialize our variables
+  return this.each(function() {
+    var elm = $(this);
+    var elmSettings = {};
+    // Copy settings for each button
+    // Object has to be converted to string so it can be cloned otherwise it reference to the first object
+    var elmBaseSettings = JSON.parse(JSON.stringify(plupload_base_settings));
+
+    // Create commands
+    var cmd = {
+      // On button initialization
+      init: function(){
+        // Get attributes value
+        elmSettings.data_target_id = elm.attr('data-target-id');
+        var target = $('#'+elmSettings.data_target_id);
+
+        // Attach hidden uploader box
+        var uploader_id = "uploader_"+elmSettings.data_target_id;
+        var plupload_basic = "<div id='"+uploader_id+"' style='display:none;visibility:hidden;'></div>";
+        $(plupload_basic).insertAfter(elm);
+        elmBaseSettings["browse_button"] = elm.attr('id');
+        elmBaseSettings["container"] = uploader_id;
+        elmBaseSettings["file_data_name"] = 'file_'+elm.attr('id');
+        elmBaseSettings["multipart_params"]["img_id"] = elm.attr('id');
+        elmBaseSettings["multipart_params"]["action"] = "user_photo_plupload_action";
+        var logo_uploader = new plupload.Uploader(elmBaseSettings);
+        logo_uploader.init();
+
+        var logo_loader;
+        // When a file was added in the queue
+        logo_uploader.bind('FilesAdded', function(up, files){
+          $.each(files, function(i, file){
+            target.fadeOut(200, function(){
+              $('<div class="new_photo_'+file.id+' photo-loader"><span class="loader"></span></div>').insertAfter(target);
+              logo_loader = $('.new_photo_'+file.id, target.parent());
+              $('.loader', logo_loader).spin('medium-left', '#000000');
+              logo_loader.css('visibility', 'visible');
+            });
+          });
+          up.refresh();
+          up.start();
+        });
+
+        // Upload progress (not used at the moment)
+        //uploader.bind('UploadProgress', function(up, file){});
+
+        // When the file was uploaded
+        logo_uploader.bind('FileUploaded', function(up, file, response){
+          if(typeof(response=="Object") && response.status==0){
+            setTimeout(function(){
+              $('.photo-loader', target.parent()).remove();
+              target.fadeIn(300);
+              cmd.showError("Connection error");
+            }, 200);
+          }
+          else {
+            var json_response = JSON.parse(response["response"]);
+
+            logo_loader.fadeOut(200, function(){
+              $(this).remove();
+              if(json_response["status_code"]==1){
+                target.attr('src', json_response["url"]);
+              }
+              else {
+                cmd.showError('Failed to upload new logo');
+              }
+              target.fadeIn(300);
+            });
+          }
+        });
+
+        logo_uploader.bind('Error', function(up, e){
+          // Show error
+          if(logo_loader){
+            logo_loader.fadeOut(200, function(){
+              $(this).remove();
+              target.fadeIn(300);
+            });
+          }
+          cmd.showError(e.message);
+        });
+      },
+      showError: function(error_string){
+        $('.upload_error').remove();
+        $('<div class="upload_error" style="display:inline-block;opacity:0;margin-top:0;margin-bottom:10px;text-align:center;width:180px">'+error_string+'</div>').insertBefore(elm);
+        var upload_err = $('.upload_error');
+        upload_err.animate({'opacity':1}, 500);
+        // Then remove slowly
+        setTimeout(function(){
+          upload_err.animate({'opacity':0}, 1000, function(){
+            $(this).slideUp(100, function(){$(this).remove();});
+          });
+        }, 2000);
+      }
+    };
+    cmd.init();
+  });
+};
+
+/**
  * The media uploader jQuery plugin, this one is for photo upload
  */
 $.fn.accoladeuploader = function() {
@@ -308,6 +411,7 @@ $.fn.accoladeuploader = function() {
 $( document ).ready( function() {
   $('.add-media').filter(function(){return !$(this).hasClass('add-video');}).mediauploader();
   $('button.change-logo,input[type="button"].change-logo').logouploader();
+  $('.upload-user-photo').userphotouploader();
 
   /* Delete media confirmation */
   $('.thumb-trash').live('click', function(e) {
@@ -317,6 +421,8 @@ $( document ).ready( function() {
     var list       = $(this).closest('li');
     var media_id   = list.attr('media-id');
     var media_type = list.attr('media-type');
+    // Nested modal workaround;
+    jQuery().modal.Constructor.prototype.enforceFocus = function(){};
     container.modal();
     button.unbind('click').click(function(e) {
       e.preventDefault();
@@ -348,7 +454,9 @@ $( document ).ready( function() {
     var media_caption = $('#media-caption');
     var media_description = $('#media-description');
     media_caption.val(list.attr('media-caption'));
-    media_description.val(list.attr('media-description'));
+    media_description.val(list.attr('media-description'))
+    // Nested modal workaround
+    jQuery().modal.Constructor.prototype.enforceFocus = function(){};;
     container.modal();
     /* Do save media tag */
     button.unbind('click').click(function(e) {

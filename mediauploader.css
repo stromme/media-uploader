@@ -26,7 +26,8 @@
 
 /* Logo image uploader box style */
 
-.logo-loader {
+.logo-loader,
+.photo-loader {
   display: inline-block;
   text-align: center;
   width: 258px;
@@ -34,11 +35,16 @@
   position: relative;
   border: 1px solid #DDD;
   border-radius: 5px;
-  margin-top: 10px;
   visibility: hidden;
 }
 
-.logo-loader .loader {
+.photo-loader {
+  width: 198px;
+  height: 198px;
+}
+
+.logo-loader .loader,
+.photo-loader .loader {
   left: 50%;
   top: 50%;
   position: absolute;
