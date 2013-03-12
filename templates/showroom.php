@@ -20,6 +20,6 @@
       echo '<div class="thumb-favorite" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Mark the photo as your favorite."><i class="icon-ok icon-white"></i></div>';
     }
     ?>
-    <a href="javascript:void(0);" class="action-tag-media preventDefault" >Describe this <?=$media_type?> </a><icon class="icon-tags"></icon>
+    <!--a href="javascript:void(0);" class="action-tag-media preventDefault" >Describe this <?=$media_type?> </a><icon class="icon-tags"></icon-->
   </div>
 </li>
