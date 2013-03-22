@@ -53,51 +53,53 @@ class The_Media_Uploader {
    * @return null
    */
   function action_enqueue_scripts(){
-    if(!wp_script_is('toolbox-spinner'))
-      wp_enqueue_script('toolbox-spinner', plugins_url('spinner.min.js', __FILE__), array('jquery'), '20121205');
-    wp_enqueue_script('the-media-uploader', plugins_url('mediauploader.js', __FILE__), array('plupload-all'), '20121205');
+    if(is_user_logged_in() && strstr($_SERVER['REQUEST_URI'], 'toolbox')){
+      if(!wp_script_is('toolbox-spinner'))
+        wp_enqueue_script('toolbox-spinner', plugins_url('spinner.min.js', __FILE__), array('jquery'), '20121205');
+      wp_enqueue_script('the-media-uploader', plugins_url('mediauploader.js', __FILE__), array('plupload-all'), '20121205');
 
-    $settings = get_option('mediauploader_settings');
-    if(!$settings){
-      $settings = array(
-        "max_upload_size"=>self::$default_max_upload_size,
-        "max_width"=>self::$default_max_width,
-        "max_height"=>self::$default_max_height,
-        "image_quality"=>self::$default_image_quality
+      $settings = get_option('mediauploader_settings');
+      if(!$settings){
+        $settings = array(
+          "max_upload_size"=>self::$default_max_upload_size,
+          "max_width"=>self::$default_max_width,
+          "max_height"=>self::$default_max_height,
+          "image_quality"=>self::$default_image_quality
+        );
+      }
+
+      // Default settings for plupload
+      $plupload_init = array(
+        'runtimes' => 'html5,flash,html4,silverlight',
+        'browse_button' => 'plupload-browse-button', // default, changed later
+        'container' => 'plupload-upload-ui', // default, changed later
+        'drop_element' => false,
+        'file_data_name' => 'async-upload', // default, changed later
+        'multiple_queues' => false,
+        'max_file_size' => $settings["max_upload_size"].'b',
+        'url' => admin_url('admin-ajax.php'),
+        'flash_swf_url' => includes_url('js/plupload/plupload.flash.swf'),
+        'silverlight_xap_url' => includes_url('js/plupload/plupload.silverlight.xap'),
+        'filters' => array(array('title' => __('Image Files'), 'extensions' => "jpg,png,jpeg,gif")),
+        'multipart' => true,
+        'urlstream_upload' => true,
+        'multi_selection' => false,
+         // additional post data to send to our ajax hook
+        'multipart_params' => array(
+          '_ajax_nonce' => wp_create_nonce('pluloader'), // will be added per uploader
+          'action' => 'plupload_action', // the ajax action name
+          'imgid' => 0 // default, will be changed later
+        ),
+        'resize'=> array(
+          'width'=> $settings["max_width"],
+          'height'=> $settings["max_height"],
+          'quality'=> $settings["image_quality"]
+        )
       );
+      // Load plupload settings into javascript
+      wp_localize_script('the-media-uploader', 'plupload_base_settings',$plupload_init);
+      wp_enqueue_style( 'the-media-uploader', plugins_url( 'mediauploader.css', __FILE__ ));
     }
-
-    // Default settings for plupload
-    $plupload_init = array(
-      'runtimes' => 'html5,flash,html4,silverlight',
-      'browse_button' => 'plupload-browse-button', // default, changed later
-      'container' => 'plupload-upload-ui', // default, changed later
-      'drop_element' => false,
-      'file_data_name' => 'async-upload', // default, changed later
-      'multiple_queues' => false,
-      'max_file_size' => $settings["max_upload_size"].'b',
-      'url' => admin_url('admin-ajax.php'),
-      'flash_swf_url' => includes_url('js/plupload/plupload.flash.swf'),
-      'silverlight_xap_url' => includes_url('js/plupload/plupload.silverlight.xap'),
-      'filters' => array(array('title' => __('Image Files'), 'extensions' => "jpg,png,jpeg,gif")),
-      'multipart' => true,
-      'urlstream_upload' => true,
-      'multi_selection' => false,
-       // additional post data to send to our ajax hook
-      'multipart_params' => array(
-        '_ajax_nonce' => wp_create_nonce('pluloader'), // will be added per uploader
-        'action' => 'plupload_action', // the ajax action name
-        'imgid' => 0 // default, will be changed later
-      ),
-      'resize'=> array(
-        'width'=> $settings["max_width"],
-        'height'=> $settings["max_height"],
-        'quality'=> $settings["image_quality"]
-      )
-    );
-    // Load plupload settings into javascript
-    wp_localize_script('the-media-uploader', 'plupload_base_settings',$plupload_init);
-    wp_enqueue_style( 'the-media-uploader', plugins_url( 'mediauploader.css', __FILE__ ));
   }
 
   /**
