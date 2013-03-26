@@ -232,8 +232,8 @@ class The_Media_Uploader {
         'url'           => $status['url'],
       );
       add_theme_support('custom-header', $args);
-			set_theme_mod( 'header_image', $status['url'] );
-			set_theme_mod( 'header_image_data', $args );
+			update_option( 'header_image', $status['url'] );
+			update_option( 'header_image_data', $args );
 
       $status["status_code"] = 1;
 
