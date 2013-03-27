@@ -7,7 +7,7 @@
   if($template_params['favorite']) $attr_favorite = ' data-favorite="1"';
 ?>
 
-<li media-id="<?=$attachment_id?>" media-type="<?=$media_type?>" media-caption="<?=$template_params['media_caption']?>" media-description="<?=$template_params['media_description']?>"<?=($taxonomy && $taxonomy!="")?'taxonomy="'.$taxonomy.'"':""?><?=$attr_favorite?>>
+<li media-id="<?=$attachment_id?>" media-type="<?=$media_type?>" media-caption="<?=$template_params['media_caption']?>" media-description="<?=$template_params['media_description']?>"<?=($taxonomy && $taxonomy!="")?' taxonomy="'.$taxonomy.'"':""?><?=$attr_favorite?>>
   <a class="thumbnail">
     <img src="<?=$template_params['attachment_thumb']?>" id="thumb_<?=$attachment_id?>" />
   </a>

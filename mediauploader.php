@@ -718,7 +718,8 @@ class The_Media_Uploader {
 
           if($media_taxonomy && is_array($media_terms)){
             $terms = wp_get_post_terms($attachment_id, $media_taxonomy);
-            if(in_array($terms[0]->slug, $media_terms)){
+            $first_term_slug = (isset($terms[0]) && isset($terms[0]->slug))? $terms[0]->slug : '';
+            if(in_array($first_term_slug, $media_terms)){
               // Load template from file, redirect echo into string
               ob_start();
               load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
@@ -727,6 +728,7 @@ class The_Media_Uploader {
             }
           }
           else {
+            $template_params['taxonomy'] = '';
             if($media_taxonomy && !is_array($media_terms)) $template_params['taxonomy'] = $media_taxonomy;
             // Load template from file, redirect echo into string
             ob_start();
