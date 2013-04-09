@@ -368,6 +368,7 @@ $.fn.accoladeuploader = function() {
               if(json_response["status_code"]==1){
                 target.attr('src', json_response["url"]);
                 target.attr('current-id', json_response["id"]);
+                $('.change-accolade-image', target.parent()).html('Change image');
               }
               else {
                 cmd.showError('Failed to upload new logo');

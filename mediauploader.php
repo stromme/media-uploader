@@ -339,6 +339,7 @@ class The_Media_Uploader {
       //These 4 lines actually insert the attachment into the Media Library using the attachment_data array created above.
       if($post_id=="") $post_id = 0;
       $attach_id = wp_insert_attachment($attachment_data, $path, $post_id);
+      set_post_thumbnail( $post_id, $attach_id );
       //Yes, you do "require" the following line of code
       require_once(ABSPATH."wp-admin".'/includes/image.php');
       $attach_data = wp_generate_attachment_metadata($attach_id, $path);
@@ -348,7 +349,7 @@ class The_Media_Uploader {
 
       // Resize it
       if(!is_wp_error($image)){
-        $image->resize(50, 50, true);
+        $image->resize(150, 150, true);
         $image->save($status["file"]);
       }
 
