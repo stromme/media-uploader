@@ -22,58 +22,60 @@ $.fn.mediauploader = function() {
         elmSettings.data_template = elm.attr('data-template');
         var target = $('#'+elmSettings.data_target_id);
 
-        // Attach hidden uploader box
-        var uploader_id = "uploader_"+elmSettings.data_target_id;
-        var plupload_basic = "<div id='"+uploader_id+"' style='display:none;visibility:hidden;'></div>";
-        $(plupload_basic).insertAfter(elm);
-        elmBaseSettings["browse_button"] = elm.attr('id');
-        elmBaseSettings["container"] = uploader_id;
-        elmBaseSettings["file_data_name"] = 'file_'+elm.attr('id');
-        elmBaseSettings["multipart_params"]["img_id"] = elm.attr('id');
-        elmBaseSettings["multipart_params"]["post_id"] = elmSettings.data_post_id;
-        elmBaseSettings["multipart_params"]["template"] = elmSettings.data_template;
-        var uploader = new plupload.Uploader(elmBaseSettings);
-        //uploader.bind('Init', function(up){});
-        uploader.init();
+        if(elmSettings.data_target_id && elmSettings.data_target_id!=''){
+          // Attach hidden uploader box
+          var uploader_id = "uploader_"+elmSettings.data_target_id;
+          var plupload_basic = "<div id='"+uploader_id+"' style='display:none;visibility:hidden;' class='plupload-uploader-container'></div>";
+          $(plupload_basic).insertAfter(elm);
+          elmBaseSettings["browse_button"] = elm.attr('id');
+          elmBaseSettings["container"] = uploader_id;
+          elmBaseSettings["file_data_name"] = 'file_'+elm.attr('id');
+          elmBaseSettings["multipart_params"]["img_id"] = elm.attr('id');
+          elmBaseSettings["multipart_params"]["post_id"] = elmSettings.data_post_id;
+          elmBaseSettings["multipart_params"]["template"] = elmSettings.data_template;
+          var uploader = new plupload.Uploader(elmBaseSettings);
+          //uploader.bind('Init', function(up){});
+          uploader.init();
 
-        // When a file was added in the queue
-        uploader.bind('FilesAdded', function(up, files){
-          $.each(files, function(i, file) {
-            target.prepend('<li class="new_thumb_'+file.id+'"><a><span class="loader"></span></a></li>');
-            $('.new_thumb_'+file.id+' .loader', target).spin('medium-left', '#000000');
+          // When a file was added in the queue
+          uploader.bind('FilesAdded', function(up, files){
+            $.each(files, function(i, file) {
+              target.prepend('<li class="new_thumb_'+file.id+'"><a><span class="loader"></span></a></li>');
+              $('.new_thumb_'+file.id+' .loader', target).spin('medium-left', '#000000');
+            });
+            up.refresh();
+            up.start();
           });
-          up.refresh();
-          up.start();
-        });
 
-        // Upload progress (not used at the moment)
-        //uploader.bind('UploadProgress', function(up, file){});
+          // Upload progress (not used at the moment)
+          //uploader.bind('UploadProgress', function(up, file){});
 
-        // When the file was uploaded
-        uploader.bind('FileUploaded', function(up, file, response){
-          if(typeof(response=="Object") && response.status==0){
-            setTimeout(function(){
-              $('li.new_thumb_'+file.id, target).remove();
-              cmd.showError("Connection error");
-            }, 100);
-          }
-          else {
-            var json_response = JSON.parse(response["response"]);
-
-            if(json_response["status_code"]==1){
-              $('li.new_thumb_'+file.id, target).replaceWith(json_response["html"]);
+          // When the file was uploaded
+          uploader.bind('FileUploaded', function(up, file, response){
+            if(typeof(response=="Object") && response.status==0){
+              setTimeout(function(){
+                $('li.new_thumb_'+file.id, target).remove();
+                cmd.showError("Connection error");
+              }, 100);
             }
             else {
-              cmd.showError(json_response["error"]);
-              $('li.new_thumb_'+file.id, target).fadeOut(500, function(){$(this).remove();});
-            }
-          }
-        });
+              var json_response = JSON.parse(response["response"]);
 
-        uploader.bind('Error', function(up, e){
-          // Show error
-          cmd.showError(e.message);
-        });
+              if(json_response["status_code"]==1){
+                $('li.new_thumb_'+file.id, target).replaceWith(json_response["html"]);
+              }
+              else {
+                cmd.showError(json_response["error"]);
+                $('li.new_thumb_'+file.id, target).fadeOut(500, function(){$(this).remove();});
+              }
+            }
+          });
+
+          uploader.bind('Error', function(up, e){
+            // Show error
+            cmd.showError(e.message);
+          });
+        }
       },
       showError: function(error_string){
         $('.upload_error').remove();
