@@ -417,34 +417,7 @@ $( document ).ready( function() {
   $('.upload-user-photo').userphotouploader();
 
   /* Delete media confirmation */
-  $('.thumb-trash').live('click', function(e) {
-    e.preventDefault();
-    var container  = $('#delete-confirm');
-    var button     = $('.action-confirm', container);
-    var list       = $(this).closest('li');
-    var media_id   = list.attr('media-id');
-    var media_type = list.attr('media-type');
-    // Nested modal workaround;
-    jQuery().modal.Constructor.prototype.enforceFocus = function(){};
-    container.modal();
-    button.unbind('click').click(function(e) {
-      e.preventDefault();
-      if (!button.hasClass('disabled')) {
-        button.addClass('disabled');
-        confirm_delete_media(media_id, media_type, function() {
-          setTimeout(function(){
-            list.fadeOut(300, function() {
-              $(this).remove();
-            });
-          }, 600);
-          container.modal('hide');
-          button.removeClass('disabled');
-        }, function() {
-          button.removeClass('disabled');
-        });
-      }
-    });
-  });
+  default_thumb_trash_action();
 
   /* Open tag media form */
   $('.action-tag-media').live('click', function(e) {
@@ -483,6 +456,39 @@ $( document ).ready( function() {
 });
 
 })(jQuery);
+
+function default_thumb_trash_action(){
+  $('.thumb-trash')
+    .die('click.mediauploader')
+    .live('click.mediauploader', function(e) {
+    e.preventDefault();
+    var container  = $('#delete-confirm');
+    var button     = $('.action-confirm', container);
+    var list       = $(this).closest('li');
+    var media_id   = list.attr('media-id');
+    var media_type = list.attr('media-type');
+    // Nested modal workaround;
+    jQuery().modal.Constructor.prototype.enforceFocus = function(){};
+    container.modal();
+    button.unbind('click').click(function(e) {
+      e.preventDefault();
+      if (!button.hasClass('disabled')) {
+        button.addClass('disabled');
+        confirm_delete_media(media_id, media_type, function() {
+          setTimeout(function(){
+            list.fadeOut(300, function() {
+              $(this).remove();
+            });
+          }, 600);
+          container.modal('hide');
+          button.removeClass('disabled');
+        }, function() {
+          button.removeClass('disabled');
+        });
+      }
+    });
+  });
+}
 
 /**
  * Function for add video on manage media module
