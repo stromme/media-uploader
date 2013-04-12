@@ -60,7 +60,6 @@ $.fn.mediauploader = function() {
             }
             else {
               var json_response = JSON.parse(response["response"]);
-
               if(json_response["status_code"]==1){
                 $('li.new_thumb_'+file.id, target).replaceWith(json_response["html"]);
               }
@@ -73,21 +72,32 @@ $.fn.mediauploader = function() {
 
           uploader.bind('Error', function(up, e){
             // Show error
-            cmd.showError(e.message);
+            cmd.showError(e);
           });
         }
       },
-      showError: function(error_string){
-        $('.upload_error').remove();
-        elm.parent().append($('<div class="upload_error" style="display:none;">'+error_string+'</div>'));
-        var upload_err = $('.upload_error');
+      showError: function(error){
+        var message = error.message;
+        switch(error.code){
+          case -600: message = "File size too big.";
+            break;
+        }
+        var target = $('#'+elmSettings.data_target_id);
+        $('.photo_upload_error').remove();
+        $('<div class="photo_upload_error" style="display:none;padding:12px 12px 0 12px;width:auto;"><div class="alert alert-error info-alert" style="margin-bottom:0;"><a class="close">×</a><span>'+message+'</span></div></div></div>').insertBefore(target.parent());
+        var upload_err = $('.photo_upload_error');
         upload_err.fadeIn(1000);
+        $('.close', upload_err).click(function(){
+          upload_err.animate({'opacity':0}, 'fast', function(){
+            upload_err.slideUp(100, function(){upload_err.remove();});
+          });
+        });
         // Then remove slowly
         setTimeout(function(){
-          upload_err.animate({'opacity':0}, 1000, function(){
-            $(this).slideUp(100, function(){$(this).remove();});
-          });
-        }, 2000);
+//          upload_err.animate({'opacity':0}, 'slow', function(){
+//            $(this).slideUp(100, function(){$(this).remove();});
+//          });
+        }, 3000);
       }
     };
     cmd.init();
@@ -285,7 +295,7 @@ $.fn.userphotouploader = function(options) {
       },
       showError: function(error_string){
         $('.upload_error').remove();
-        $('<div class="upload_error" style="display:inline-block;opacity:0;margin-top:0;margin-bottom:10px;text-align:center;width:180px">'+error_string+'</div>').insertBefore(elm);
+        $('<div class="upload_error" style="display:inline-block;opacity:0;margin-top:0;margin-bottom:10px;text-align:center;width:180px">'+error_string+'</div>').insertBefore(elm.closest('.btn-group'));
         var upload_err = $('.upload_error');
         upload_err.animate({'opacity':1}, 500);
         // Then remove slowly
