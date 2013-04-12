@@ -33,7 +33,7 @@ class The_Media_Uploader {
     // Set priority lower than enqueue action in theme-settings,
     // so we can check if a script has been enqueued
     add_action('wp_enqueue_scripts', array($this, 'action_enqueue_scripts'), 11);
-    add_action('admin_menu', array($this, 'action_admin_menu'));
+    add_action('network_admin_menu', array($this, 'action_network_admin_menu'));
     add_action('wp_ajax_plupload_action', array($this, 'g_plupload_action'));
     add_action('wp_ajax_logo_plupload_action', array($this, 'g_logo_plupload_action'));
     add_action('wp_ajax_user_photo_plupload_action', array($this, 'g_user_photo_plupload_action'));
@@ -48,7 +48,7 @@ class The_Media_Uploader {
   /**
    * Load javascript for the plugin.
    *
-   * @uses wp_script_is, wp_enqueue_script, plugins_url, add_action, get_option, wp_localize_script, wp_enqueue_style, includes_url
+   * @uses wp_script_is, wp_enqueue_script, plugins_url, add_action, get_site_option, get_blog_option, wp_localize_script, wp_enqueue_style, includes_url
    * @action template_redirect
    * @return null
    */
@@ -58,7 +58,7 @@ class The_Media_Uploader {
         wp_enqueue_script('toolbox-spinner', plugins_url('spinner.min.js', __FILE__), array('jquery'), '20121205');
       wp_enqueue_script('the-media-uploader', plugins_url('mediauploader.js', __FILE__), array('plupload-all'), '20121205');
 
-      $settings = get_option('mediauploader_settings');
+      $settings = (get_site_option('mediauploader_settings'))?get_site_option('mediauploader_settings'):get_blog_option(1, 'mediauploader_settings');
       if(!$settings){
         $settings = array(
           "max_upload_size"=>self::$default_max_upload_size,
@@ -371,17 +371,17 @@ class The_Media_Uploader {
    * Shows admin menu for the media uploader
    *
    * @uses add_options_page
-   * @action admin_menu
+   * @action network_admin_menu
    * @return null
    */
-  function action_admin_menu(){
-    add_options_page('Media Uploader', 'Media Uploader', 'manage_options', __FILE__, array($this, 'media_uploader_admin'));
+  function action_network_admin_menu(){
+    add_submenu_page('settings.php', 'Media Uploader', 'Media Uploader', 'manage_options', 'mediaupload_setting', array($this, 'media_uploader_admin'));
   }
 
   /**
    * The functions for media uploader admin
    *
-   * @uses update_option, get_option, add_settings_error, settings_error, screen_icon
+   * @uses update_option, get_site_option, get_blog_option, add_settings_error, settings_error, screen_icon
    * @action admin_menu
    * @return null
    */
@@ -404,12 +404,12 @@ class The_Media_Uploader {
         'max_height' => $max_height,
         'image_quality' => $image_quality
       );
-      update_option('mediauploader_settings', $new_settings);
+      update_site_option('mediauploader_settings', $new_settings);
 
       add_settings_error('general', 'settings_updated', __('Settings saved.'), 'updated');
     }
-    else if(get_option('mediauploader_settings')){
-      $settings = get_option('mediauploader_settings');
+    else if((get_site_option('mediauploader_settings'))?get_site_option('mediauploader_settings'):get_blog_option(1, 'mediauploader_settings')){
+      $settings = (get_site_option('mediauploader_settings'))?get_site_option('mediauploader_settings'):get_blog_option(1, 'mediauploader_settings');
       $max_upload_size = $settings['max_upload_size'];
       $max_width = $settings['max_width'];
       $max_height = $settings['max_height'];
