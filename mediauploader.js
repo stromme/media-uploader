@@ -55,7 +55,7 @@ $.fn.mediauploader = function() {
             if(typeof(response=="Object") && response.status==0){
               setTimeout(function(){
                 $('li.new_thumb_'+file.id, target).remove();
-                cmd.showError("Connection error");
+                cmd.showError({'code':0, 'message':"Connection error"});
               }, 100);
             }
             else {
@@ -64,7 +64,7 @@ $.fn.mediauploader = function() {
                 $('li.new_thumb_'+file.id, target).replaceWith(json_response["html"]);
               }
               else {
-                cmd.showError(json_response["error"]);
+                cmd.showError({'code':0, 'message':json_response["error"]});
                 $('li.new_thumb_'+file.id, target).fadeOut(500, function(){$(this).remove();});
               }
             }
@@ -94,9 +94,9 @@ $.fn.mediauploader = function() {
         });
         // Then remove slowly
         setTimeout(function(){
-//          upload_err.animate({'opacity':0}, 'slow', function(){
-//            $(this).slideUp(100, function(){$(this).remove();});
-//          });
+          upload_err.animate({'opacity':0}, 'slow', function(){
+            $(this).slideUp(100, function(){$(this).remove();});
+          });
         }, 3000);
       }
     };

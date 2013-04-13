@@ -128,34 +128,42 @@ class The_Media_Uploader {
       $wp_upload_dir = wp_upload_dir(); // Get the wp upload dir
       $file = basename($image); // Grab just filename
       $path = $wp_upload_dir['path'].'/'.$file; // Create URI
-      $wp_filetype = wp_check_filetype($file); // Get MIME type
-      // Create attachment data
-      $attachment_data = array(
-        'guid' => $image,
-        'post_mime_type' => $wp_filetype['type'],
-        'post_title' => preg_replace('/\.[^.]+$/','', $file)
-      );
-      //These 4 lines actually insert the attachment into the Media Library using the attachment_data array created above.
-      $attach_id = wp_insert_attachment($attachment_data, $path, $post_id);
-      //Yes, you do "require" the following line of code
-      require_once(ABSPATH."wp-admin".'/includes/image.php');
-      $attach_data = wp_generate_attachment_metadata($attach_id, $path);
-      wp_update_attachment_metadata($attach_id,$attach_data);
-      // Get permalink (in case needed), this also creates many file with various sizes
-      $template_params['attachment_id'] = $attach_id;
-      $template_params['attachment_thumb'] = wp_get_attachment_thumb_url($attach_id); // Get thumbnail url
-      $template_params['media_type'] = "photo";
-      // Redirect echo into string
-      ob_start();
-      // Load those variables into our template
-      load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', true);
-      $string = ob_get_contents();
-      ob_end_clean();
-      $status["status_code"] = 1;
-      $status["html"] = $string;
+      $image_size = getimagesize($path);
+      if($image_size[0]>=600 && $image_size[1]>=450){
+        $wp_filetype = wp_check_filetype($file); // Get MIME type
+        // Create attachment data
+        $attachment_data = array(
+          'guid' => $image,
+          'post_mime_type' => $wp_filetype['type'],
+          'post_title' => preg_replace('/\.[^.]+$/','', $file)
+        );
+        //These 4 lines actually insert the attachment into the Media Library using the attachment_data array created above.
+        $attach_id = wp_insert_attachment($attachment_data, $path, $post_id);
+        //Yes, you do "require" the following line of code
+        require_once(ABSPATH."wp-admin".'/includes/image.php');
+        $attach_data = wp_generate_attachment_metadata($attach_id, $path);
+        wp_update_attachment_metadata($attach_id,$attach_data);
+        // Get permalink (in case needed), this also creates many file with various sizes
+        $template_params['attachment_id'] = $attach_id;
+        $template_params['attachment_thumb'] = wp_get_attachment_thumb_url($attach_id); // Get thumbnail url
+        $template_params['media_type'] = "photo";
+        // Redirect echo into string
+        ob_start();
+        // Load those variables into our template
+        load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', true);
+        $string = ob_get_contents();
+        ob_end_clean();
+        $status["status_code"] = 1;
+        $status["html"] = $string;
 
-      // Destroy used attachment variables
-      unset($attach_id, $attach_data, $attachment_data, $file, $path, $wp_filetype);
+        // Destroy used attachment variables
+        unset($attach_id, $attach_data, $attachment_data, $file, $path, $wp_filetype);
+      }
+      else {
+        unlink($path);
+        $status["status_code"] = 0;
+        $status["error"] = 'Minimum image size is 600x450 px pixels, this image '.$image_size[0].'x'.$image_size[1].' px.';
+      }
     }
     echo json_encode($status);
     exit;
