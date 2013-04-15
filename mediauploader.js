@@ -93,11 +93,11 @@ $.fn.mediauploader = function() {
           });
         });
         // Then remove slowly
-        setTimeout(function(){
+        /*setTimeout(function(){
           upload_err.animate({'opacity':0}, 'slow', function(){
             $(this).slideUp(100, function(){$(this).remove();});
           });
-        }, 3000);
+        }, 3000);*/
       }
     };
     cmd.init();
