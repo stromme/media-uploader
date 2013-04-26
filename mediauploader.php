@@ -669,6 +669,11 @@ class The_Media_Uploader {
   public function delete_media_taxonomy_callback(){
     $post_id = $_POST['post_id'];
     $taxonomy = $_POST['taxonomy'];
+    $args = array(
+      'ID' => $post_id,
+      'post_parent' => null
+    );
+    wp_update_post($args);
     wp_set_object_terms($post_id, array(), $taxonomy, FALSE);
     // Return ajax response as json string
     die(json_encode(array('status'=>1,'status_message'=>'Media term deleted')));
@@ -681,7 +686,7 @@ class The_Media_Uploader {
    * @action
    * @return string
    */
-  public function media_manage_list_media($template, $type='', $media_taxonomy=null, $media_terms=null){
+  public function media_manage_list_media($template, $type='', $media_taxonomy=null, $media_terms=null, $parent=0){
     /* Set global for usage in template */
     global $template_params;
     $html = '';
@@ -694,9 +699,11 @@ class The_Media_Uploader {
     $args = array(
       'post_type' => $post_type,
       'numberposts' => -1,
-      'post_status' => 'any',
-      'post_parent' => 0
+      'post_status' => 'any'
     );
+    if($parent>-1){
+      $args['post_parent'] = $parent;
+    }
     if($media_taxonomy){
       if(!is_array($media_terms)) $args[$media_taxonomy] = $media_terms;
     }
@@ -706,44 +713,47 @@ class The_Media_Uploader {
     // Post loaded
     if($posts){
       foreach ($posts as $post) {
-        $attachment_id = $post->ID;
-        $template_params['attachment_id'] = $post->ID;
-        $context = get_post_meta($attachment_id, '_wp_attachment_context', true);
-        if($context!="custom-header"){
-          // Different type of post, different ways to load contents
-          if($post->post_type=='attachment'){
-            $template_params['attachment_thumb'] = wp_get_attachment_thumb_url($attachment_id);
-            $template_params['media_type'] = 'photo';
-          }
-          else {
-            $video_thumbnail = get_post_meta($attachment_id, 'video_thumbnail', true);
-            $template_params['attachment_thumb'] = $video_thumbnail;
-            $template_params['media_type'] = 'video';
-          }
-          // In our media, excerpt is caption
-          $template_params['media_caption'] = $post->post_excerpt;
-          // In our media, description is post content
-          $template_params['media_description'] = $post->post_content;
+        $is_user_photo = get_post_meta($post->ID, 'is_photo', true);
+        if((!isset($post->post_parent) || $post->post_parent==0 || !isset($args['post_parent'])) && $is_user_photo!=1){
+          $attachment_id = $post->ID;
+          $template_params['attachment_id'] = $post->ID;
+          $context = get_post_meta($attachment_id, '_wp_attachment_context', true);
+          if($context!="custom-header"){
+            // Different type of post, different ways to load contents
+            if($post->post_type=='attachment'){
+              $template_params['attachment_thumb'] = wp_get_attachment_thumb_url($attachment_id);
+              $template_params['media_type'] = 'photo';
+            }
+            else {
+              $video_thumbnail = get_post_meta($attachment_id, 'video_thumbnail', true);
+              $template_params['attachment_thumb'] = $video_thumbnail;
+              $template_params['media_type'] = 'video';
+            }
+            // In our media, excerpt is caption
+            $template_params['media_caption'] = $post->post_excerpt;
+            // In our media, description is post content
+            $template_params['media_description'] = $post->post_content;
 
-          if($media_taxonomy && is_array($media_terms)){
-            $terms = wp_get_post_terms($attachment_id, $media_taxonomy);
-            $first_term_slug = (isset($terms[0]) && isset($terms[0]->slug))? $terms[0]->slug : '';
-            if(in_array($first_term_slug, $media_terms)){
+            if($media_taxonomy && is_array($media_terms)){
+              $terms = wp_get_post_terms($attachment_id, $media_taxonomy);
+              $first_term_slug = (isset($terms[0]) && isset($terms[0]->slug))? $terms[0]->slug : '';
+              if(in_array($first_term_slug, $media_terms)){
+                // Load template from file, redirect echo into string
+                ob_start();
+                load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
+                $html .= ob_get_contents();
+                ob_end_clean();
+              }
+            }
+            else {
+              $template_params['taxonomy'] = '';
+              if($media_taxonomy && !is_array($media_terms)) $template_params['taxonomy'] = $media_taxonomy;
               // Load template from file, redirect echo into string
               ob_start();
               load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
               $html .= ob_get_contents();
               ob_end_clean();
             }
-          }
-          else {
-            $template_params['taxonomy'] = '';
-            if($media_taxonomy && !is_array($media_terms)) $template_params['taxonomy'] = $media_taxonomy;
-            // Load template from file, redirect echo into string
-            ob_start();
-            load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', false);
-            $html .= ob_get_contents();
-            ob_end_clean();
           }
         }
       }
