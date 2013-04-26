@@ -205,7 +205,7 @@ class The_Media_Uploader {
       // Get permalink (in case needed), this also creates many file with various sizes
       $image = wp_get_image_editor($status["file"]); // Return an implementation that extends <tt>WP_Image_Editor</tt>
       if(!is_wp_error($image)){
-        $image->resize(250, 200, true);
+        $image->resize(300, 200, false);
         $image->save($status["file"]);
       }
 
@@ -228,20 +228,20 @@ class The_Media_Uploader {
       }
 
       // Make currently uploaded image as header image
-      add_post_meta($attach_id, '_wp_attachment_context', 'custom-header');
-      add_post_meta($attach_id, '_wp_attachment_is_custom_header', get_option('stylesheet'));
+      update_post_meta($attach_id, '_wp_attachment_context', 'custom-header');
+      update_post_meta($attach_id, '_wp_attachment_is_custom_header', get_option('stylesheet'));
       
       // Set it as custom header image
       $args = array(
-        'width'         => 250,
+        'width'         => 300,
         'height'        => 200,
         'default-image' => $status["url"],
         'thumbnail_url' => $status['url'],
         'url'           => $status['url'],
       );
       add_theme_support('custom-header', $args);
-			update_option( 'header_image', $status['url'] );
-			update_option( 'header_image_data', $args );
+      set_theme_mod( 'header_image', $status['url'] );
+      set_theme_mod( 'header_image_data', $args );
 
       $status["status_code"] = 1;
 
