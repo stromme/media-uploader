@@ -162,7 +162,7 @@ class The_Media_Uploader {
       else {
         unlink($path);
         $status["status_code"] = 0;
-        $status["error"] = 'Minimum image size is 600x450 px pixels, this image '.$image_size[0].'x'.$image_size[1].' px.';
+        $status["error"] = ' Image needs to be at least 600x450 px, this image is '.$image_size[0].'x'.$image_size[1].' px.';
       }
     }
     echo json_encode($status);
