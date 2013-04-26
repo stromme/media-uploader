@@ -43,6 +43,7 @@ $.fn.mediauploader = function() {
               target.prepend('<li class="new_thumb_'+file.id+'"><a><span class="loader"></span></a></li>');
               $('.new_thumb_'+file.id+' .loader', target).spin('medium-left', '#000000');
             });
+            $('.photo_upload_error').fadeOut('fast', function(){ $(this).remove() });
             up.refresh();
             up.start();
           });
