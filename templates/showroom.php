@@ -15,9 +15,9 @@
   <div class="thumb-trash"><i class="icon-trash"></i></div>
   <?php
   if ($template_params['favorite']) {
-    echo '<div class="thumb-favorite thumb-favorite-selected" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Your favorite photo of this project."><i class="icon-ok icon-white"></i></div>';
+    echo '<div class="thumb-favorite thumb-favorite-selected touch-check" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Your favorite photo of this project."><i class="icon-ok icon-white"></i></div>';
   } else {
-    echo '<div class="thumb-favorite" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Mark the photo as your favorite."><i class="icon-ok icon-white"></i></div>';
+    echo '<div class="thumb-favorite touch-check" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Mark the photo as your favorite."><i class="icon-ok icon-white"></i></div>';
   }
   ?>
   <!--div class="pull-right">
