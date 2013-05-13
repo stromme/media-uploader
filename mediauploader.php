@@ -43,6 +43,8 @@ class The_Media_Uploader {
     add_action('wp_ajax_tag_media', array($this, 'tag_media_callback'));
     add_action('wp_ajax_add_video', array($this, 'add_video_callback'));
     add_action('wp_ajax_delete_media_taxonomy', array($this, 'delete_media_taxonomy_callback'));
+    add_action('tb_new_media', array($this, 'tb_new_media'));
+    add_action('tb_accolade_image_change', array($this, 'tb_accolade_image_change'));
   }
 
   /**
@@ -116,6 +118,7 @@ class The_Media_Uploader {
     $img_id = $_POST["img_id"];
     $post_id = $_POST["post_id"];
     $template = $_POST["template"];
+    $page = $_POST["page"];
     if($post_id=='') $post_id=0;
 
     // Handle file upload
@@ -147,6 +150,13 @@ class The_Media_Uploader {
         $template_params['attachment_id'] = $attach_id;
         $template_params['attachment_thumb'] = wp_get_attachment_thumb_url($attach_id); // Get thumbnail url
         $template_params['media_type'] = "photo";
+        $image_src = wp_get_attachment_image_src($attach_id, 'full');
+        apply_filters('tb_new_media', array(
+          'type'  => $template_params['media_type'],
+          'thumb' => $template_params['attachment_thumb'],
+          'full'  => $image_src[0],
+          'page'  => $page
+        ));
         // Redirect echo into string
         ob_start();
         // Load those variables into our template
@@ -323,9 +333,11 @@ class The_Media_Uploader {
   function g_accolade_plupload_action() {
     // Globalize variable tobe able to access in the template
 
-    $img_id = $_POST["img_id"];
-    $old_id = $_POST["current_id"];
+    $img_id  = $_POST["img_id"];
+    $old_id  = $_POST["current_id"];
     $post_id = $_POST["post_id"];
+    $name    = $_POST["name"];
+    $type    = $_POST["type"];
 
     // Handle file upload
     $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => true, 'action' => 'accolade_plupload_action'));
@@ -367,6 +379,11 @@ class The_Media_Uploader {
       $status["status_code"] = 1;
       // Return new attachment ID
       $status["id"] = $attach_id;
+
+      apply_filters('tb_accolade_image_change', array(
+        'accolade_name'  => $name,
+        'accolade_type'  => ucfirst($type)
+      ));
 
       // Destroy used attachment variables
       unset($attach_id, $attach_data, $attachment_data, $file, $path);
@@ -519,6 +536,7 @@ class The_Media_Uploader {
     global $template_params;
     $video_link = $_POST['video_link'];
     $template = $_POST['template'];
+    $page = $_POST['page'];
     $html = '';
 
     // Checks for any YouTube URL. After http(s) support a or v for Youtube Lyte and v or vh for Smart Youtube plugin
@@ -561,6 +579,12 @@ class The_Media_Uploader {
         $template_params['media_type'] = 'video';
         $template_params['media_caption'] = '';
         $template_params['media_description'] = '';
+        apply_filters('tb_new_media', array(
+          'type'  => $template_params['media_type'],
+          'thumb' => $template_params['attachment_thumb'],
+          'full'  => $video_link,
+          'page'  => $page
+        ));
 
         // Get template, redirect echo into string
         ob_start();
@@ -598,6 +622,7 @@ class The_Media_Uploader {
     $media_type = $_POST['media_type'];
 
     $delete_status = 0;
+    $media_post = get_post($media_id);
 
     // Different type, different ways of deleting post.
     // Delete photo as an attachment so wp will remove all the images files
@@ -620,6 +645,9 @@ class The_Media_Uploader {
       $status_code = 0;
       $status_message = "Failed to delete ".$media_type;
     }
+
+    // It's already deleted, no need to hassle with it
+    if(!$media_post) $status_code = -1;
 
     // Return ajax response as json string
     die(json_encode(array('status'=>$status_code,'status_message'=>$status_message)));
@@ -788,6 +816,24 @@ class The_Media_Uploader {
 
     // Returns the html for list of media
     return $html;
+  }
+
+  /**
+   * Hook for newly uploaded media
+   *
+   * @param $media
+   */
+  function tb_new_media($media){
+    do_action('notify_new_media', $media);
+  }
+
+  /**
+   * Hook for accolade image change
+   *
+   * @param $media
+   */
+  function tb_accolade_image_change($media){
+    do_action('notify_change_accolade_image', $media);
   }
 };
 

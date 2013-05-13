@@ -20,6 +20,7 @@ $.fn.mediauploader = function() {
         elmSettings.data_post_id = (elm.attr('data-post-id'))?elm.attr('data-post-id'):'';
         elmSettings.data_target_id = elm.attr('data-target-id');
         elmSettings.data_template = elm.attr('data-template');
+        elmSettings.data_page = elm.attr('data-page');
         var target = $('#'+elmSettings.data_target_id);
 
         if(elmSettings.data_target_id && elmSettings.data_target_id!=''){
@@ -33,6 +34,9 @@ $.fn.mediauploader = function() {
           elmBaseSettings["multipart_params"]["img_id"] = elm.attr('id');
           elmBaseSettings["multipart_params"]["post_id"] = elmSettings.data_post_id;
           elmBaseSettings["multipart_params"]["template"] = elmSettings.data_template;
+          if(elmSettings.data_page){
+            elmBaseSettings["multipart_params"]["page"] = elmSettings.data_page;
+          }
           var uploader = new plupload.Uploader(elmBaseSettings);
           //uploader.bind('Init', function(up){});
           uploader.init();
@@ -340,6 +344,15 @@ $.fn.accoladeuploader = function() {
         elmBaseSettings["file_data_name"] = 'file_'+elm.attr('id');
         elmBaseSettings["multipart_params"]["img_id"] = elm.attr('id');
         elmBaseSettings["multipart_params"]["action"] = "accolade_plupload_action";
+        var accolade_block = elm.closest('.accolade-item');
+        var accolade_type = accolade_block.attr('data-type');
+        if(accolade_type=='certifications'){
+          elmBaseSettings["multipart_params"]["name"] = $('.accolade-authority', accolade_block).val();
+        }
+        else {
+          elmBaseSettings["multipart_params"]["name"] = $('.accolade-name', accolade_block).val();
+        }
+        elmBaseSettings["multipart_params"]["type"] = accolade_type;
         elmBaseSettings["resize"]["width"] = "200";
         elmBaseSettings["resize"]["height"] = "200";
         var accolade_uploader = new plupload.Uploader(elmBaseSettings);
@@ -511,12 +524,13 @@ function default_thumb_trash_action(){
  * @param failed_callback
  * @return void
  */
-function add_video(video_link, data_target, data_template, success_callback, failed_callback){
+function add_video(video_link, data_target, data_template, data_page, success_callback, failed_callback){
   // If video link is not empty (validate on server side later)
   var data = {
     action: 'add_video',
     'video_link': video_link,
-    'template': data_template
+    'template': data_template,
+    'page': data_page
   };
   // Set target element list container
   var target = $('#'+data_target);
@@ -587,7 +601,7 @@ function confirm_delete_media(media_id, media_type, success_callback, failed_cal
     if(json_response.status==1){
       if(typeof(success_callback)=='function') success_callback();
     }
-    else {
+    else if(json_response.status>=0) {
       bootstrap_alert(json_response.status_message, 'error');
       if(typeof(failed_callback)=='function') failed_callback();
     }
