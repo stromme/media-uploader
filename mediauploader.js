@@ -37,6 +37,7 @@ $.fn.mediauploader = function() {
           if(elmSettings.data_page){
             elmBaseSettings["multipart_params"]["page"] = elmSettings.data_page;
           }
+          console.log(elmBaseSettings);
           var uploader = new plupload.Uploader(elmBaseSettings);
           //uploader.bind('Init', function(up){});
           uploader.init();

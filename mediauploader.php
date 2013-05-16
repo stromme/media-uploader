@@ -58,7 +58,7 @@ class The_Media_Uploader {
     if(is_user_logged_in() && strstr($_SERVER['REQUEST_URI'], 'toolbox')){
       if(!wp_script_is('toolbox-spinner'))
         wp_enqueue_script('toolbox-spinner', plugins_url('spinner.min.js', __FILE__), array('jquery'), '20121205');
-      wp_enqueue_script('custom-plupload-core', plugins_url('plupload/plupload.js', __FILE__), array(), '1.5.7');
+      wp_enqueue_script('custom-plupload-core', plugins_url('plupload/plupload.full.js', __FILE__), array(), '1.5.7');
       wp_enqueue_script('custom-plupload-html5', plugins_url('plupload/plupload.html5.js', __FILE__), array(), '1.5.7');
       wp_enqueue_script('custom-plupload-flash', plugins_url('plupload/plupload.flash.js', __FILE__), array(), '1.5.7');
       wp_enqueue_script('custom-plupload-silverlight', plugins_url('plupload/plupload.silverlight.js', __FILE__), array(), '1.5.7');
