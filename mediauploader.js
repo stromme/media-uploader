@@ -40,8 +40,8 @@ $.fn.mediauploader = function() {
           var uploader = new plupload.Uploader(elmBaseSettings);
           //uploader.bind('Init', function(up){});
           uploader.init();
-          //$('#'+uploader_id+' div').removeAttr('style');
-          //$('#'+uploader_id+' input').removeAttr('style');
+          $('#'+uploader_id+' div').removeAttr('style');
+          $('#'+uploader_id+' input').removeAttr('style');
           // When a file was added in the queue
           uploader.bind('FilesAdded', function(up, files){
             $.each(files, function(i, file) {
