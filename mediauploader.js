@@ -26,7 +26,7 @@ $.fn.mediauploader = function() {
         if(elmSettings.data_target_id && elmSettings.data_target_id!=''){
           // Attach hidden uploader box
           var uploader_id = "uploader_"+elmSettings.data_target_id;
-          var plupload_basic = "<div id='"+uploader_id+"' style='display:none;visibility:hidden;' class='plupload-uploader-container'></div>";
+          var plupload_basic = "<div id='"+uploader_id+"' style='display:inline-block;width:0;height:0;overflow:hidden;' class='plupload-uploader-container'></div>";
           $(plupload_basic).insertAfter(elm);
           elmBaseSettings["browse_button"] = elm.attr('id');
           elmBaseSettings["container"] = uploader_id;
