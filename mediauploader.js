@@ -42,6 +42,7 @@ $.fn.mediauploader = function() {
           uploader.init();
           $('#'+uploader_id+' div').removeAttr('style');
           $('#'+uploader_id+' input').removeAttr('style');
+
           // When a file was added in the queue
           uploader.bind('FilesAdded', function(up, files){
             $.each(files, function(i, file) {
@@ -141,6 +142,8 @@ $.fn.logouploader = function(options) {
         elmBaseSettings["multipart_params"]["action"] = "logo_plupload_action";
         var logo_uploader = new plupload.Uploader(elmBaseSettings);
         logo_uploader.init();
+        $('#'+uploader_id+' div').removeAttr('style');
+        $('#'+uploader_id+' input').removeAttr('style');
 
         var logo_loader;
         // When a file was added in the queue
@@ -244,6 +247,8 @@ $.fn.userphotouploader = function(options) {
         elmBaseSettings["multipart_params"]["action"] = "user_photo_plupload_action";
         var logo_uploader = new plupload.Uploader(elmBaseSettings);
         logo_uploader.init();
+        $('#'+uploader_id+' div').removeAttr('style');
+        $('#'+uploader_id+' input').removeAttr('style');
 
         var logo_loader;
         // When a file was added in the queue
@@ -358,6 +363,8 @@ $.fn.accoladeuploader = function() {
         elmBaseSettings["resize"]["height"] = "200";
         var accolade_uploader = new plupload.Uploader(elmBaseSettings);
         accolade_uploader.init();
+        $('#'+uploader_id+' div').removeAttr('style');
+        $('#'+uploader_id+' input').removeAttr('style');
 
         var accolade_image_loader;
         // When a file was added in the queue
