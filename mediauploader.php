@@ -137,15 +137,10 @@ class The_Media_Uploader {
       $file = basename($image); // Grab just filename
       $path = $wp_upload_dir['path'].'/'.$file; // Create URI
 
-      $image_size = getimagesize($path);
-      //var_dump($image_size);
-      //echo "\n\n";
+      // Fix image orientation
       $this->image_fix_orientation($path);
 
       $image_size = getimagesize($path);
-      //var_dump($image_size);
-      //echo "\n\n";
-
       if($image_size[0]>=600 && $image_size[1]>=450){
         $wp_filetype = wp_check_filetype($file); // Get MIME type
         // Create attachment data
@@ -213,6 +208,10 @@ class The_Media_Uploader {
       $wp_upload_dir = wp_upload_dir(); // Get the wp upload dir
       $file = basename($image); // Grab just filename
       $path = $wp_upload_dir['path'].'/'.$file; // Create URI
+
+      // Fix image orientation
+      $this->image_fix_orientation($path);
+
       $wp_filetype = wp_check_filetype($file); // Get MIME type
       // Create attachment data
       $attachment_data = array(
@@ -296,6 +295,10 @@ class The_Media_Uploader {
       $wp_upload_dir = wp_upload_dir(); // Get the wp upload dir
       $file = basename($image); // Grab just filename
       $path = $wp_upload_dir['path'].'/'.$file; // Create URI
+
+      // Fix image orientation
+      $this->image_fix_orientation($path);
+
       $wp_filetype = wp_check_filetype($file); // Get MIME type
       // Create attachment data
       $attachment_data = array(
@@ -363,6 +366,10 @@ class The_Media_Uploader {
       $wp_upload_dir = wp_upload_dir(); // Get the wp upload dir
       $file = basename($image); // Grab just filename
       $path = $wp_upload_dir['path'].'/'.$file; // Create URI
+
+      // Fix image orientation
+      $this->image_fix_orientation($path);
+
       $wp_filetype = wp_check_filetype($file); // Get MIME type
       // Create attachment data
       $attachment_data = array(
