@@ -127,7 +127,7 @@ class The_Media_Uploader {
     if($post_id=='') $post_id=0;
 
     // Handle file upload
-    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => true, 'action' => 'plupload_action'));
+    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => false, 'action' => 'plupload_action'));
     $status["status_code"] = 0;
 
     // If status is containing minimum 3 parameter: url, uri, and type
@@ -195,7 +195,7 @@ class The_Media_Uploader {
     $img_id = $_POST["img_id"];
 
     // Handle file upload
-    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => true, 'action' => 'logo_plupload_action'));
+    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => false, 'action' => 'logo_plupload_action'));
     $status["status_code"] = 0;
 
     // If status is containing minimum 3 parameter: url, uri, and type
@@ -278,7 +278,7 @@ class The_Media_Uploader {
     $img_id = $_POST["img_id"];
 
     // Handle file upload
-    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => true, 'action' => 'user_photo_plupload_action'));
+    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => false, 'action' => 'user_photo_plupload_action'));
     $status["status_code"] = 0;
 
     // If status is containing minimum 3 parameter: url, uri, and type
@@ -345,7 +345,7 @@ class The_Media_Uploader {
     $type    = $_POST["type"];
 
     // Handle file upload
-    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => true, 'action' => 'accolade_plupload_action'));
+    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => false, 'action' => 'accolade_plupload_action'));
     $status["status_code"] = 0;
 
     // If status is containing minimum 3 parameter: url, uri, and type

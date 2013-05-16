@@ -134,8 +134,9 @@ $.fn.logouploader = function(options) {
 
         // Attach hidden uploader box
         var uploader_id = "uploader_"+elmSettings.data_target_id;
-        var plupload_basic = "<div id='"+uploader_id+"' style='display:none;visibility:hidden;'></div>";
-        $(plupload_basic).insertAfter(elm);
+        var plupload_basic = "<div id='"+uploader_id+"' style='float:right;display:inline-block;width:0;height:0;overflow:hidden;'></div>";
+        //$(plupload_basic).insertAfter(elm);
+        $('body').append(plupload_basic);
         elmBaseSettings["browse_button"] = elm.attr('id');
         elmBaseSettings["container"] = uploader_id;
         elmBaseSettings["file_data_name"] = 'file_'+elm.attr('id');
@@ -239,8 +240,9 @@ $.fn.userphotouploader = function(options) {
 
         // Attach hidden uploader box
         var uploader_id = "uploader_"+elmSettings.data_target_id;
-        var plupload_basic = "<div id='"+uploader_id+"' style='display:none;visibility:hidden;'></div>";
-        $(plupload_basic).insertAfter(elm);
+        var plupload_basic = "<div id='"+uploader_id+"' style='float:right;display:inline-block;width:0;height:0;overflow:hidden;'></div>";
+        //$(plupload_basic).insertAfter(elm);
+        $('body').append(plupload_basic);
         elmBaseSettings["browse_button"] = elm.attr('id');
         elmBaseSettings["container"] = uploader_id;
         elmBaseSettings["file_data_name"] = 'file_'+elm.attr('id');
@@ -344,8 +346,9 @@ $.fn.accoladeuploader = function() {
 
         // Attach hidden uploader box
         var uploader_id = "uploader_"+elmSettings.data_target_id;
-        var plupload_basic = "<div id='"+uploader_id+"' style='display:none;visibility:hidden;'></div>";
-        $(plupload_basic).insertAfter(elm);
+        var plupload_basic = "<div id='"+uploader_id+"' style='float:right;display:inline-block;width:0;height:0;overflow:hidden;'></div>";
+        //$(plupload_basic).insertAfter(elm);
+        $('body').append(plupload_basic);
         elmBaseSettings["browse_button"] = elm.attr('id');
         elmBaseSettings["container"] = uploader_id;
         elmBaseSettings["file_data_name"] = 'file_'+elm.attr('id');
@@ -445,7 +448,7 @@ $.fn.accoladeuploader = function() {
  * Ready, set, go!
  */
 $( document ).ready( function() {
-  $('.add-media').filter(function(){return !$(this).hasClass('add-video');}).mediauploader();
+  $('.add-media').filter(function(){return (!$(this).hasClass('add-video') && $(this).closest('.project-template').length<=0);}).mediauploader();
   $('button.change-logo,input[type="button"].change-logo').logouploader();
   $('.upload-user-photo').userphotouploader();
 
