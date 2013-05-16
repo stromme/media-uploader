@@ -136,7 +136,16 @@ class The_Media_Uploader {
       $wp_upload_dir = wp_upload_dir(); // Get the wp upload dir
       $file = basename($image); // Grab just filename
       $path = $wp_upload_dir['path'].'/'.$file; // Create URI
+
       $image_size = getimagesize($path);
+      //var_dump($image_size);
+      //echo "\n\n";
+      $this->image_fix_orientation($path);
+
+      $image_size = getimagesize($path);
+      //var_dump($image_size);
+      //echo "\n\n";
+
       if($image_size[0]>=600 && $image_size[1]>=450){
         $wp_filetype = wp_check_filetype($file); // Get MIME type
         // Create attachment data
@@ -839,6 +848,57 @@ class The_Media_Uploader {
    */
   function tb_accolade_image_change($media){
     do_action('notify_change_accolade_image', $media);
+  }
+
+  function image_fix_orientation($path){
+    $exif = @exif_read_data($path);
+    //var_dump($exif);
+    $mime_type = $exif['MimeType'];
+    $image = false;
+    switch ( $mime_type ) {
+      case 'image/jpeg':
+        $image = imagecreatefromjpeg($path);
+        break;
+      case 'image/png':
+        $image = imagecreatefrompng($path);
+        break;
+      case 'image/gif':
+        $image = imagecreatefromgif($path);
+        break;
+    }
+    $orientation = $exif['Orientation'];
+    if($image){
+      if (!empty($orientation)) {
+        $rotated = false;
+        switch ($orientation) {
+          case 3:
+            $image = imagerotate($image, 180, 0);
+            $rotated = true;
+            break;
+          case 6:
+            $image = imagerotate($image, -90, 0);
+            $rotated = true;
+            break;
+          case 8:
+            $image = imagerotate($image, 90, 0);
+            $rotated = true;
+            break;
+        }
+        if($rotated){
+          switch ( $mime_type ) {
+            case 'image/jpeg':
+              imagejpeg($image, $path, 100);
+              break;
+            case 'image/png':
+              imagepng($image, $path, 100);
+              break;
+            case 'image/gif':
+              imagegif($image, $path, 100);
+              break;
+          }
+        }
+      }
+    }
   }
 };
 
