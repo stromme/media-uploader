@@ -58,11 +58,11 @@ class The_Media_Uploader {
     if(is_user_logged_in() && strstr($_SERVER['REQUEST_URI'], 'toolbox')){
       if(!wp_script_is('toolbox-spinner'))
         wp_enqueue_script('toolbox-spinner', plugins_url('spinner.min.js', __FILE__), array('jquery'), '20121205');
-      wp_enqueue_script('plupload-core', plugins_url().'/media-uploader/plupload/plupload.js', array(), '1.5.7');
-      wp_enqueue_script('plupload-html5', plugins_url().'/media-uploader/plupload/plupload.html5.js', array(), '1.5.7');
-      wp_enqueue_script('plupload-flash', plugins_url().'/media-uploader/plupload/plupload.flash.js', array(), '1.5.7');
-      wp_enqueue_script('plupload-silverlight', plugins_url().'/media-uploader/plupload/plupload.silverlight.js', array(), '1.5.7');
-      wp_enqueue_script('plupload-html4', plugins_url().'/media-uploader/plupload/plupload.html4.js', array(), '1.5.7');
+      wp_enqueue_script('custom-plupload-core', plugins_url('plupload/plupload.js', __FILE__), array(), '1.5.7');
+      wp_enqueue_script('custom-plupload-html5', plugins_url('plupload/plupload.html5.js', __FILE__), array(), '1.5.7');
+      wp_enqueue_script('custom-plupload-flash', plugins_url('plupload/plupload.flash.js', __FILE__), array(), '1.5.7');
+      wp_enqueue_script('custom-plupload-silverlight', plugins_url('plupload/plupload.silverlight.js', __FILE__), array(), '1.5.7');
+      wp_enqueue_script('custom-plupload-html4', plugins_url('plupload/plupload.html4.js', __FILE__), array(), '1.5.7');
       wp_enqueue_script('the-media-uploader', plugins_url('mediauploader.js', __FILE__), array(), '20121205');
 
       $settings = (get_site_option('mediauploader_settings'))?get_site_option('mediauploader_settings'):get_blog_option(1, 'mediauploader_settings');
@@ -85,8 +85,8 @@ class The_Media_Uploader {
         'multiple_queues' => false,
         'max_file_size' => $settings["max_upload_size"].'b',
         'url' => admin_url('admin-ajax.php'),
-        'flash_swf_url' => includes_url('js/plupload/plupload.flash.swf'),
-        'silverlight_xap_url' => includes_url('js/plupload/plupload.silverlight.xap'),
+        'flash_swf_url' => plugins_url('media-uploader/plupload/plupload.flash.swf'),
+        'silverlight_xap_url' => plugins_url('media-uploader/plupload/plupload.silverlight.xap'),
         'filters' => array(array('title' => __('Image Files'), 'extensions' => "jpg,png,jpeg,gif")),
         'multipart' => true,
         'urlstream_upload' => true,
