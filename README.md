@@ -11,6 +11,12 @@ Attach image-upload capability to any button within a theme. Ex `<button type='f
 `"data-post-id"`: ID of the post the uploaded image will be attached to.
 `"data-target-id"`: ID of the HTML element were the new image template will be appended. ex. "showroom"
 `"data-template"`: Name of template to use to display the uploaded photos.
+
+Media uploader plugin used for:
+* Projects, research page for services/locations, and media manage page
+* Accolades image
+* Site logo
+* User profile photo
  
 ## User Experience
 

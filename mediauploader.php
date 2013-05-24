@@ -29,9 +29,6 @@ class The_Media_Uploader {
 
   /* Plugin Construction */
   function __construct() {
-    //add_shortcode("media-uploader", array($this,"media_uploader_shortcode"));
-    // Set priority lower than enqueue action in theme-settings,
-    // so we can check if a script has been enqueued
     add_action('wp_enqueue_scripts', array($this, 'action_enqueue_scripts'), 11);
     add_action('network_admin_menu', array($this, 'action_network_admin_menu'));
     add_action('wp_ajax_plupload_action', array($this, 'g_plupload_action'));
@@ -500,52 +497,6 @@ class The_Media_Uploader {
   }
 
   /**
-   * Media uploader shortcode
-   *
-   * @uses is_user_logged_in, ob_start, ob_get_conents, ob_end_clean
-   * @action init
-   * @return shortcode string
-   */
-  function media_uploader_shortcode($atts){
-    global $template_params;
-    
-    $string = 'You must login wordpress to see this code running. <a href="/wpmulti/wp-admin">Here</a>';
-    if(is_user_logged_in()){
-      $string = "<p>";
-      $string .=
-        "<button type='button' id='photo-add-".$atts["target"]."' class='btn add-media' type='file' ".
-        "data-post-id='".$atts["post"]."' ".
-        "data-target-id='".$atts["target"]."' ".
-        "data-template='".$atts["template"]."'><i class=\"icon-camera\"></i>Add photo</button>".
-        "<ul id=\"".$atts["target"]."\" class=\"thumbnails media-thumbnails\">";
-      // Load post attachment, for debugging purposes
-      $args = array(
-        'post_type' => 'attachment',
-        'numberposts' => 9,
-        'post_status' => null,
-        'post_parent' => $atts["post"]
-      );
-      $attachments = get_posts($args);
-      if ($attachments) {
-        foreach ($attachments as $attachment) {
-          // FIlls variable content
-          $template_params['attachment_id'] = $attachment->ID;
-          $template_params['attachment_link'] = get_attachment_link($attachment->ID);
-          $template_params['attachment_thumb'] = wp_get_attachment_thumb_url($attachment->ID);
-          // Redirect echo into string
-          ob_start();
-          load_template(plugin_dir_path(__FILE__).'templates/'.$atts["template"].'.php', false);
-          $string .= ob_get_contents();
-          ob_end_clean();
-        }
-      }
-      $string .= "</ul>";
-      $string .= "</p>";
-    }
-    return $string;
-  }
-
-  /**
    * Ajax function for adding video on manage media module
    *
    * @uses wp_insert_post, load_template, add_post_meta, preg_match, ob_start, ob_end_clean, ob_get_contents, json_encode
@@ -729,13 +680,17 @@ class The_Media_Uploader {
   }
 
   /**
-   * Public function for pre loading exsisting media and show it on manage media module
+   * Public function for pre loading existing media and show it on manage media module
    *
    * @uses get_posts, get_attachment_link, wp_get_attachment_thumb_url, get_post_permalink, get_post_meta, load_template, ob_start, ob_end_clean, ob_get_contents
-   * @action
+   * @param $template
+   * @param string $type
+   * @param null $media_taxonomy
+   * @param null $media_terms
+   * @param int $parent
    * @return string
    */
-  public function media_manage_list_media($template, $type='', $media_taxonomy=null, $media_terms=null, $parent=0){
+  public static function media_manage_list_media($template, $type='', $media_taxonomy=null, $media_terms=null, $parent=0){
     /* Set global for usage in template */
     global $template_params;
     $html = '';
@@ -816,10 +771,11 @@ class The_Media_Uploader {
    * Get media template
    *
    * @uses load_template, ob_start, ob_end_clean, ob_get_contents
-   * @action
-   * @return void
+   * @param $template
+   * @param $name
+   * @return string
    */
-  public function get_media_template($template, $name){
+  public static function get_media_template($template, $name){
     /* Set global for usage in template */
     global $template_params;
     $html = '';

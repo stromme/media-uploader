@@ -67,13 +67,17 @@ $.fn.mediauploader = function() {
               }, 100);
             }
             else {
-              var json_response = JSON.parse(response["response"]);
-              if(json_response["status_code"]==1){
-                $('li.new_thumb_'+file.id, target).replaceWith(json_response["html"]);
-              }
-              else {
-                cmd.showError({'code':0, 'message':json_response["error"]});
-                $('li.new_thumb_'+file.id, target).fadeOut(500, function(){$(this).remove();});
+              try {
+                var json_response = JSON.parse(response["response"]);
+                if(json_response["status_code"]==1){
+                  $('li.new_thumb_'+file.id, target).replaceWith(json_response["html"]);
+                }
+                else {
+                  cmd.showError({'code':0, 'message':json_response["error"]});
+                  $('li.new_thumb_'+file.id, target).fadeOut(500, function(){$(this).remove();});
+                }
+              } catch (e) {
+                bootstrap_alert('Connection error', 'error');
               }
             }
           });
@@ -175,18 +179,21 @@ $.fn.logouploader = function(options) {
             }, 200);
           }
           else {
-            var json_response = JSON.parse(response["response"]);
-
-            logo_loader.fadeOut(200, function(){
-              $(this).remove();
-              if(json_response["status_code"]==1){
-                target.attr('src', json_response["url"]);
-              }
-              else {
-                cmd.showError('Failed to upload new logo');
-              }
-              target.fadeIn(300);
-            });
+            try {
+              var json_response = JSON.parse(response["response"]);
+              logo_loader.fadeOut(200, function(){
+                $(this).remove();
+                if(json_response["status_code"]==1){
+                  target.attr('src', json_response["url"]);
+                }
+                else {
+                  cmd.showError('Failed to upload new logo');
+                }
+                target.fadeIn(300);
+              });
+            } catch (e) {
+              bootstrap_alert('Connection error', 'error');
+            }
           }
         });
 
@@ -281,18 +288,21 @@ $.fn.userphotouploader = function(options) {
             }, 200);
           }
           else {
-            var json_response = JSON.parse(response["response"]);
-
-            logo_loader.fadeOut(200, function(){
-              $(this).remove();
-              if(json_response["status_code"]==1){
-                target.attr('src', json_response["url"]);
-              }
-              else {
-                cmd.showError('Failed to upload new logo');
-              }
-              target.fadeIn(300);
-            });
+            try {
+              var json_response = JSON.parse(response["response"]);
+              logo_loader.fadeOut(200, function(){
+                $(this).remove();
+                if(json_response["status_code"]==1){
+                  target.attr('src', json_response["url"]);
+                }
+                else {
+                  cmd.showError('Failed to upload new logo');
+                }
+                target.fadeIn(300);
+              });
+            } catch (e) {
+              bootstrap_alert('Connection error', 'error');
+            }
           }
         });
 
@@ -400,19 +410,23 @@ $.fn.accoladeuploader = function() {
             }, 200);
           }
           else {
-            var json_response = JSON.parse(response["response"]);
-            accolade_image_loader.fadeOut(200, function(){
-              $(this).remove();
-              if(json_response["status_code"]==1){
-                target.attr('src', json_response["url"]);
-                target.attr('current-id', json_response["id"]);
-                $('.change-accolade-image', target.parent()).html('Change image');
-              }
-              else {
-                cmd.showError('Failed to upload new logo');
-              }
-              target.fadeIn(300);
-            });
+            try {
+              var json_response = JSON.parse(response["response"]);
+              accolade_image_loader.fadeOut(200, function(){
+                $(this).remove();
+                if(json_response["status_code"]==1){
+                  target.attr('src', json_response["url"]);
+                  target.attr('current-id', json_response["id"]);
+                  $('.change-accolade-image', target.parent()).html('Change image');
+                }
+                else {
+                  cmd.showError('Failed to upload new logo');
+                }
+                target.fadeIn(300);
+              });
+            } catch (e) {
+              bootstrap_alert('Connection error', 'error');
+            }
           }
         });
 
@@ -456,7 +470,7 @@ $( document ).ready( function() {
   default_thumb_trash_action();
 
   /* Open tag media form */
-  $('.action-tag-media').live('click', function(e) {
+  $(document).on('click', '.action-tag-media', function(e) {
     e.preventDefault();
     var container = $('#tag-media');
     var button = $('.save', container);
@@ -494,9 +508,9 @@ $( document ).ready( function() {
 })(jQuery);
 
 function default_thumb_trash_action(){
-  $('.thumb-trash')
-    .die('click.mediauploader')
-    .live('click.mediauploader', function(e) {
+  $(document)
+    .off('click.mediauploader', '.thumb-trash')
+    .on('click.mediauploader', '.thumb-trash', function(e) {
     e.preventDefault();
     var container  = $('#delete-confirm');
     var button     = $('.action-confirm', container);
@@ -585,17 +599,21 @@ function add_video(video_link, data_target, data_template, data_page, success_ca
   },
   // Ajax replied
   function(response){
-    var json_response = JSON.parse(response);
-    if(json_response.status==1){
-      // If success, replace our newly created list with real content
-      post.spinner.spinner.replaceWith(json_response.html);
-      if(typeof(success_callback)=='function') success_callback();
-    }
-    else {
-      // If failed remove our newly created list
-      post.spinner.spinner.fadeOut(300, function(){$(this).remove();});
-      bootstrap_alert(json_response.status_message, 'error');
-      if(typeof(failed_callback)=='function') failed_callback();
+    try {
+      var json_response = JSON.parse(response);
+      if(json_response.status==1){
+        // If success, replace our newly created list with real content
+        post.spinner.spinner.replaceWith(json_response.html);
+        if(typeof(success_callback)=='function') success_callback();
+      }
+      else {
+        // If failed remove our newly created list
+        post.spinner.spinner.fadeOut(300, function(){$(this).remove();});
+        bootstrap_alert(json_response.status_message, 'error');
+        if(typeof(failed_callback)=='function') failed_callback();
+      }
+    } catch (e) {
+      bootstrap_alert('Connection error', 'error');
     }
   },
   function(){
@@ -634,13 +652,17 @@ function confirm_delete_media(media_id, media_type, success_callback, failed_cal
   },
   // Ajax replied
   function(response){
-    var json_response = JSON.parse(response);
-    if(json_response.status==1){
-      if(typeof(success_callback)=='function') success_callback();
-    }
-    else if(json_response.status>=0) {
-      bootstrap_alert(json_response.status_message, 'error');
-      if(typeof(failed_callback)=='function') failed_callback();
+    try {
+      var json_response = JSON.parse(response);
+      if(json_response.status==1){
+        if(typeof(success_callback)=='function') success_callback();
+      }
+      else if(json_response.status>=0) {
+        bootstrap_alert(json_response.status_message, 'error');
+        if(typeof(failed_callback)=='function') failed_callback();
+      }
+    } catch (e) {
+      bootstrap_alert('Connection error', 'error');
     }
   });
   post.doAjaxPost();
@@ -685,15 +707,19 @@ function confirm_tag_media(media_id, media_type, media_caption, media_descriptio
     },
     // Ajax replied
     function(response){
-      var json_response = JSON.parse(response);
-      if(json_response.status==1){
-        bootstrap_alert(json_response.status_message, 'success');
-        // Do success callback if updating is success
-        if(typeof(success_callback)=='function') success_callback();
-      }
-      else {
-        bootstrap_alert(json_response.status_message, 'error');
-        if(typeof(failed_callback)=='function') failed_callback();
+      try {
+        var json_response = JSON.parse(response);
+        if(json_response.status==1){
+          bootstrap_alert(json_response.status_message, 'success');
+          // Do success callback if updating is success
+          if(typeof(success_callback)=='function') success_callback();
+        }
+        else {
+          bootstrap_alert(json_response.status_message, 'error');
+          if(typeof(failed_callback)=='function') failed_callback();
+        }
+      } catch (e) {
+        bootstrap_alert('Connection error', 'error');
       }
     },
     function(){
