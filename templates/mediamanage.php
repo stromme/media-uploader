@@ -2,7 +2,7 @@
   global $template_params;
   $attachment_id = $template_params['attachment_id'];
   $media_type    = $template_params['media_type'];
-  $taxonomy      = $template_params['taxonomy'];
+  $taxonomy      = (isset($template_params['taxonomy']))?$template_params['taxonomy']:'';
 ?>
 
 <li media-id="<?=$attachment_id?>" media-type="<?=$media_type?>" media-caption="<?=$template_params['media_caption']?>" media-description="<?=$template_params['media_description']?>"<?=($taxonomy && $taxonomy!="")?'taxonomy="'.$taxonomy.'"':""?>>

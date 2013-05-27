@@ -802,6 +802,7 @@ class The_Media_Uploader {
    */
   function tb_new_media($media){
     do_action('notify_new_media', $media);
+    do_action('update_site_health', 'media');
   }
 
   /**
