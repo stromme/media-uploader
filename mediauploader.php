@@ -610,6 +610,7 @@ class The_Media_Uploader {
 
     // Create status code and status message
     if($delete_status){
+      do_action('update_site_health', 'media');
       $status_code = 1;
       $status_message = "Successfully deleting ".$media_type;
     }
