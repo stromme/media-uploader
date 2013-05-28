@@ -139,13 +139,13 @@ $.fn.logouploader = function(options) {
         // Attach hidden uploader box
         var uploader_id = "uploader_"+elmSettings.data_target_id;
         var plupload_basic = "<div id='"+uploader_id+"' style='float:right;display:inline-block;width:0;height:0;overflow:hidden;'></div>";
-        //$(plupload_basic).insertAfter(elm);
         $('body').append(plupload_basic);
         elmBaseSettings["browse_button"] = elm.attr('id');
         elmBaseSettings["container"] = uploader_id;
         elmBaseSettings["file_data_name"] = 'file_'+elm.attr('id');
         elmBaseSettings["multipart_params"]["img_id"] = elm.attr('id');
         elmBaseSettings["multipart_params"]["action"] = "logo_plupload_action";
+        elmBaseSettings["filters"][0]["extensions"] = 'png'; // Just png for logo
         var logo_uploader = new plupload.Uploader(elmBaseSettings);
         logo_uploader.init();
         $('#'+uploader_id+' div').removeAttr('style');
@@ -162,6 +162,7 @@ $.fn.logouploader = function(options) {
               logo_loader.css('visibility', 'visible');
             });
           });
+          $('.photo_upload_error').fadeOut('fast', function(){ $(this).remove() });
           up.refresh();
           up.start();
         });
@@ -187,7 +188,7 @@ $.fn.logouploader = function(options) {
                   target.attr('src', json_response["url"]);
                 }
                 else {
-                  cmd.showError('Failed to upload new logo');
+                  cmd.showError(json_response["error"]);
                 }
                 target.fadeIn(300);
               });
@@ -208,17 +209,28 @@ $.fn.logouploader = function(options) {
           cmd.showError(e.message);
         });
       },
-      showError: function(error_string){
-        $('.upload_error').remove();
-        $('<div class="upload_error" style="display:inline-block;opacity:0;margin-top:0;margin-bottom:10px;text-align:center;width:238px;">'+error_string+'</div>').insertBefore(elm);
-        var upload_err = $('.upload_error');
-        upload_err.animate({'opacity':1}, 500);
+      showError: function(error){
+        var message = error;
+        switch(error.code){
+          case -600: message = "File size too big.";
+            break;
+        }
+        var target = $('#'+elmSettings.data_target_id);
+        $('.photo_upload_error').remove();
+        $('<div class="photo_upload_error" style="display:none;padding:0 12px 10px 12px;width:auto;"><div class="alert alert-error info-alert" style="margin-bottom:0;padding:5px;"><a class="close" style="margin-right:20px;margin-top:-5px;">×</a><span>'+message+'</span></div></div></div>').insertAfter(target.parent());
+        var upload_err = $('.photo_upload_error');
+        upload_err.fadeIn(1000);
+        $('.close', upload_err).click(function(){
+          upload_err.animate({'opacity':0}, 'fast', function(){
+            upload_err.slideUp(100, function(){upload_err.remove();});
+          });
+        });
         // Then remove slowly
         setTimeout(function(){
-          upload_err.animate({'opacity':0}, 1000, function(){
+          upload_err.animate({'opacity':0}, 'slow', function(){
             $(this).slideUp(100, function(){$(this).remove();});
           });
-        }, 2000);
+        }, 5000);
       }
     };
     cmd.init();

@@ -209,64 +209,72 @@ class The_Media_Uploader {
       // Fix image orientation
       $this->image_fix_orientation($path);
 
-      $wp_filetype = wp_check_filetype($file); // Get MIME type
-      // Create attachment data
-      $attachment_data = array(
-        'guid' => $image,
-        'post_mime_type' => $wp_filetype['type'],
-        'post_title' => preg_replace('/\.[^.]+$/','', $file)
-      );
-      //These 4 lines actually insert the attachment into the Media Library using the attachment_data array created above.
-      $attach_id = wp_insert_attachment($attachment_data, $path, 0);
-      //Yes, you do "require" the following line of code
-      require_once(ABSPATH."wp-admin".'/includes/image.php');
-      $attach_data = wp_generate_attachment_metadata($attach_id, $path);
-      wp_update_attachment_metadata($attach_id,$attach_data);
-      // Get permalink (in case needed), this also creates many file with various sizes
-      $image = wp_get_image_editor($status["file"]); // Return an implementation that extends <tt>WP_Image_Editor</tt>
-      if(!is_wp_error($image)){
-        $image->resize(300, 200, false);
-        $image->save($status["file"]);
-      }
-
-      // Get all header images
-      $args = array(
-        'numberposts' => -1,
-        'post_type' => 'attachment',
-        'post_status' => 'any',
-        'post_parent' => null,
-        'meta_key' => '_wp_attachment_is_custom_header',
-        'meta_value' => get_option('stylesheet')
-      );
-      $posts = get_posts($args);
-
-      // Remove all existing header images
-      if($posts){
-        foreach ($posts as $post) {
-          wp_delete_attachment($post->ID, true);
+      $image_size = getimagesize($path);
+      if($image_size[0]>=50 && $image_size[1]>=155){
+        $wp_filetype = wp_check_filetype($file); // Get MIME type
+        // Create attachment data
+        $attachment_data = array(
+          'guid' => $image,
+          'post_mime_type' => $wp_filetype['type'],
+          'post_title' => preg_replace('/\.[^.]+$/','', $file)
+        );
+        //These 4 lines actually insert the attachment into the Media Library using the attachment_data array created above.
+        $attach_id = wp_insert_attachment($attachment_data, $path, 0);
+        //Yes, you do "require" the following line of code
+        require_once(ABSPATH."wp-admin".'/includes/image.php');
+        $attach_data = wp_generate_attachment_metadata($attach_id, $path);
+        wp_update_attachment_metadata($attach_id,$attach_data);
+        // Get permalink (in case needed), this also creates many file with various sizes
+        $image = wp_get_image_editor($status["file"]); // Return an implementation that extends <tt>WP_Image_Editor</tt>
+        if(!is_wp_error($image)){
+          $image->resize(300, 200, false);
+          $image->save($status["file"]);
         }
+
+        // Get all header images
+        $args = array(
+          'numberposts' => -1,
+          'post_type' => 'attachment',
+          'post_status' => 'any',
+          'post_parent' => null,
+          'meta_key' => '_wp_attachment_is_custom_header',
+          'meta_value' => get_option('stylesheet')
+        );
+        $posts = get_posts($args);
+
+        // Remove all existing header images
+        if($posts){
+          foreach ($posts as $post) {
+            wp_delete_attachment($post->ID, true);
+          }
+        }
+
+        // Make currently uploaded image as header image
+        update_post_meta($attach_id, '_wp_attachment_context', 'custom-header');
+        update_post_meta($attach_id, '_wp_attachment_is_custom_header', get_option('stylesheet'));
+
+        // Set it as custom header image
+        $args = array(
+          'width'         => 300,
+          'height'        => 200,
+          'default-image' => $status["url"],
+          'thumbnail_url' => $status['url'],
+          'url'           => $status['url'],
+        );
+        add_theme_support('custom-header', $args);
+        set_theme_mod( 'header_image', $status['url'] );
+        set_theme_mod( 'header_image_data', $args );
+
+        $status["status_code"] = 1;
+
+        // Destroy used attachment variables
+        unset($attach_id, $attach_data, $attachment_data, $file, $path);
       }
-
-      // Make currently uploaded image as header image
-      update_post_meta($attach_id, '_wp_attachment_context', 'custom-header');
-      update_post_meta($attach_id, '_wp_attachment_is_custom_header', get_option('stylesheet'));
-      
-      // Set it as custom header image
-      $args = array(
-        'width'         => 300,
-        'height'        => 200,
-        'default-image' => $status["url"],
-        'thumbnail_url' => $status['url'],
-        'url'           => $status['url'],
-      );
-      add_theme_support('custom-header', $args);
-      set_theme_mod( 'header_image', $status['url'] );
-      set_theme_mod( 'header_image_data', $args );
-
-      $status["status_code"] = 1;
-
-      // Destroy used attachment variables
-      unset($attach_id, $attach_data, $attachment_data, $file, $path);
+      else {
+        unlink($path);
+        $status["status_code"] = 0;
+        $status["error"] = ' Image needs to be at least 50x155 px, this image is '.$image_size[0].'x'.$image_size[1].' px.';
+      }
     }
     echo json_encode($status);
     exit;
