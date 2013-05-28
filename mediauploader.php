@@ -266,6 +266,9 @@ class The_Media_Uploader {
         set_theme_mod( 'header_image_data', $args );
 
         $status["status_code"] = 1;
+        //if(!is_super_admin(get_current_user_id())){
+          apply_filters('notify_new_site_logo_updated', '');
+        //}
 
         // Destroy used attachment variables
         unset($attach_id, $attach_data, $attachment_data, $file, $path);
