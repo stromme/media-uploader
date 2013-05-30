@@ -850,23 +850,23 @@ class The_Media_Uploader {
     $exif = @exif_read_data($path);
     //var_dump($exif);
     $mime_type = (isset($exif['MimeType']))?$exif['MimeType']:'';
-    $image = false;
     $orientation = (isset($exif['Orientation']))?$exif['Orientation']:'';
-    if($image){
-      if ($orientation!='') {
-        if($orientation==3 || $orientation==6 || $orientation==8){
-          switch ( $mime_type ) {
-            case 'image/jpeg':
-              $image = imagecreatefromjpeg($path);
-              break;
-            case 'image/png':
-              $image = imagecreatefrompng($path);
-              break;
-            case 'image/gif':
-              $image = imagecreatefromgif($path);
-              break;
-          }
+    if ($orientation!='') {
+      $image = false;
+      if($orientation==3 || $orientation==6 || $orientation==8){
+        switch ( $mime_type ) {
+          case 'image/jpeg':
+            $image = imagecreatefromjpeg($path);
+            break;
+          case 'image/png':
+            $image = imagecreatefrompng($path);
+            break;
+          case 'image/gif':
+            $image = imagecreatefromgif($path);
+            break;
         }
+      }
+      if($image){
         $rotated = false;
         switch ($orientation) {
           case 3:
