@@ -38,6 +38,18 @@ $.fn.mediauploader = function() {
           if(elmSettings.data_page){
             elmBaseSettings["multipart_params"]["page"] = elmSettings.data_page;
           }
+
+          // Only for old phone browser, such as android 2
+          var ua = navigator.userAgent;
+          if(ua.indexOf("Android")>=0){
+            var androidversion = parseFloat(ua.slice(ua.indexOf("Android")+8));
+            if(androidversion < 2.3){
+              elmBaseSettings["runtimes"] = 'html4';
+              elmBaseSettings["multipart_params"]["runtime"] = 'html4';
+            }
+          }
+          //--oldphone
+
           var uploader = new plupload.Uploader(elmBaseSettings);
           //uploader.bind('Init', function(up){});
           uploader.init();
@@ -68,6 +80,14 @@ $.fn.mediauploader = function() {
             }
             else {
               try {
+                // For HTML4 runtime, because it reads rendered html content
+                if(elmBaseSettings["multipart_params"]["runtime"]=='html4'){
+                  response["response"] = response["response"].replace(/_lt_/g, '<');
+                  response["response"] = response["response"].replace(/_rt_/g, '>');
+                  response["response"] = response["response"].replace(/_src_/g, 'src=');
+                  response["response"] = response["response"].replace(/\n/g, '');
+                }
+
                 var json_response = JSON.parse(response["response"]);
                 if(json_response["status_code"]==1){
                   $('li.new_thumb_'+file.id, target).replaceWith(json_response["html"]);
@@ -145,6 +165,18 @@ $.fn.logouploader = function(options) {
         elmBaseSettings["file_data_name"] = 'file_'+elm.attr('id');
         elmBaseSettings["multipart_params"]["img_id"] = elm.attr('id');
         elmBaseSettings["multipart_params"]["action"] = "logo_plupload_action";
+
+        // Only for old phone browser, such as android 2
+        var ua = navigator.userAgent;
+        if(ua.indexOf("Android")>=0){
+          var androidversion = parseFloat(ua.slice(ua.indexOf("Android")+8));
+          if(androidversion < 2.3){
+            elmBaseSettings["runtimes"] = 'html4';
+            elmBaseSettings["multipart_params"]["runtime"] = 'html4';
+          }
+        }
+        //--oldphone
+
         elmBaseSettings["filters"][0]["extensions"] = 'png'; // Just png for logo
         var logo_uploader = new plupload.Uploader(elmBaseSettings);
         logo_uploader.init();
@@ -181,6 +213,14 @@ $.fn.logouploader = function(options) {
           }
           else {
             try {
+              // For HTML4 runtime, because it reads rendered html content
+              if(elmBaseSettings["multipart_params"]["runtime"]=='html4'){
+                response["response"] = response["response"].replace(/_lt_/g, '<');
+                response["response"] = response["response"].replace(/_rt_/g, '>');
+                response["response"] = response["response"].replace(/_src_/g, 'src=');
+                response["response"] = response["response"].replace(/\n/g, '');
+              }
+
               var json_response = JSON.parse(response["response"]);
               logo_loader.fadeOut(200, function(){
                 $(this).remove();
@@ -267,6 +307,18 @@ $.fn.userphotouploader = function(options) {
         elmBaseSettings["file_data_name"] = 'file_'+elm.attr('id');
         elmBaseSettings["multipart_params"]["img_id"] = elm.attr('id');
         elmBaseSettings["multipart_params"]["action"] = "user_photo_plupload_action";
+
+        // Only for old phone browser, such as android 2
+        var ua = navigator.userAgent;
+        if(ua.indexOf("Android")>=0){
+          var androidversion = parseFloat(ua.slice(ua.indexOf("Android")+8));
+          if(androidversion < 2.3){
+            elmBaseSettings["runtimes"] = 'html4';
+            elmBaseSettings["multipart_params"]["runtime"] = 'html4';
+          }
+        }
+        //--oldphone
+
         var logo_uploader = new plupload.Uploader(elmBaseSettings);
         logo_uploader.init();
         $('#'+uploader_id+' div').removeAttr('style');
@@ -301,6 +353,14 @@ $.fn.userphotouploader = function(options) {
           }
           else {
             try {
+              // For HTML4 runtime, because it reads rendered html content
+              if(elmBaseSettings["multipart_params"]["runtime"]=='html4'){
+                response["response"] = response["response"].replace(/_lt_/g, '<');
+                response["response"] = response["response"].replace(/_rt_/g, '>');
+                response["response"] = response["response"].replace(/_src_/g, 'src=');
+                response["response"] = response["response"].replace(/\n/g, '');
+              }
+
               var json_response = JSON.parse(response["response"]);
               logo_loader.fadeOut(200, function(){
                 $(this).remove();
@@ -376,6 +436,18 @@ $.fn.accoladeuploader = function() {
         elmBaseSettings["file_data_name"] = 'file_'+elm.attr('id');
         elmBaseSettings["multipart_params"]["img_id"] = elm.attr('id');
         elmBaseSettings["multipart_params"]["action"] = "accolade_plupload_action";
+
+        // Only for old phone browser, such as android 2
+        var ua = navigator.userAgent;
+        if(ua.indexOf("Android")>=0){
+          var androidversion = parseFloat(ua.slice(ua.indexOf("Android")+8));
+          if(androidversion < 2.3){
+            elmBaseSettings["runtimes"] = 'html4';
+            elmBaseSettings["multipart_params"]["runtime"] = 'html4';
+          }
+        }
+        //--oldphone
+
         var accolade_block = elm.closest('.accolade-item');
         var accolade_type = accolade_block.attr('data-type');
         if(accolade_type=='certifications'){
@@ -423,6 +495,14 @@ $.fn.accoladeuploader = function() {
           }
           else {
             try {
+              // For HTML4 runtime, because it reads rendered html content
+              if(elmBaseSettings["multipart_params"]["runtime"]=='html4'){
+                response["response"] = response["response"].replace(/_lt_/g, '<');
+                response["response"] = response["response"].replace(/_rt_/g, '>');
+                response["response"] = response["response"].replace(/_src_/g, 'src=');
+                response["response"] = response["response"].replace(/\n/g, '');
+              }
+
               var json_response = JSON.parse(response["response"]);
               accolade_image_loader.fadeOut(200, function(){
                 $(this).remove();

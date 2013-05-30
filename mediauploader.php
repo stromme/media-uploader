@@ -56,10 +56,6 @@ class The_Media_Uploader {
       if(!wp_script_is('toolbox-spinner'))
         wp_enqueue_script('toolbox-spinner', plugins_url('spinner.min.js', __FILE__), array('jquery'), '20121205');
       wp_enqueue_script('custom-plupload-core', plugins_url('plupload/plupload.full.js', __FILE__), array(), '1.5.7');
-      wp_enqueue_script('custom-plupload-html5', plugins_url('plupload/plupload.html5.js', __FILE__), array(), '1.5.7');
-      wp_enqueue_script('custom-plupload-flash', plugins_url('plupload/plupload.flash.js', __FILE__), array(), '1.5.7');
-      wp_enqueue_script('custom-plupload-silverlight', plugins_url('plupload/plupload.silverlight.js', __FILE__), array(), '1.5.7');
-      wp_enqueue_script('custom-plupload-html4', plugins_url('plupload/plupload.html4.js', __FILE__), array(), '1.5.7');
       wp_enqueue_script('the-media-uploader', plugins_url('mediauploader.js', __FILE__), array(), '20121205');
 
       $settings = (get_site_option('mediauploader_settings'))?get_site_option('mediauploader_settings'):get_blog_option(1, 'mediauploader_settings');
@@ -181,7 +177,13 @@ class The_Media_Uploader {
         $status["error"] = ' Image needs to be at least 600x450 px, this image is '.$image_size[0].'x'.$image_size[1].' px.';
       }
     }
-    echo json_encode($status);
+    unset($status["file"]);
+    if(isset($_POST['runtime']) && $_POST['runtime']=='html4'){
+      $status = str_replace('src=', '_src_', json_encode($status));
+      $status = str_replace('<', '_lt_', $status);
+      echo str_replace('>', '_rt_', $status);
+    }
+    else echo json_encode($status);
     exit;
   }
 
@@ -279,7 +281,13 @@ class The_Media_Uploader {
         $status["error"] = ' Image needs to be at least 50x155 px, this image is '.$image_size[0].'x'.$image_size[1].' px.';
       }
     }
-    echo json_encode($status);
+    unset($status["file"]);
+    if(isset($_POST['runtime']) && $_POST['runtime']=='html4'){
+      $status = str_replace('src=', '_src_', json_encode($status));
+      $status = str_replace('<', '_lt_', $status);
+      echo str_replace('>', '_rt_', $status);
+    }
+    else echo json_encode($status);
     exit;
   }
 
@@ -344,7 +352,13 @@ class The_Media_Uploader {
       // Destroy used attachment variables
       unset($attach_id, $attach_data, $attachment_data, $file, $path);
     }
-    echo json_encode($status);
+    unset($status["file"]);
+    if(isset($_POST['runtime']) && $_POST['runtime']=='html4'){
+      $status = str_replace('src=', '_src_', json_encode($status));
+      $status = str_replace('<', '_lt_', $status);
+      echo str_replace('>', '_rt_', $status);
+    }
+    else echo json_encode($status);
     exit;
   }
 
@@ -417,7 +431,13 @@ class The_Media_Uploader {
       // Destroy used attachment variables
       unset($attach_id, $attach_data, $attachment_data, $file, $path);
     }
-    echo json_encode($status);
+    unset($status["file"]);
+    if(isset($_POST['runtime']) && $_POST['runtime']=='html4'){
+      $status = str_replace('src=', '_src_', json_encode($status));
+      $status = str_replace('<', '_lt_', $status);
+      echo str_replace('>', '_rt_', $status);
+    }
+    else echo json_encode($status);
     exit;
   }
 
@@ -829,22 +849,24 @@ class The_Media_Uploader {
   function image_fix_orientation($path){
     $exif = @exif_read_data($path);
     //var_dump($exif);
-    $mime_type = $exif['MimeType'];
+    $mime_type = (isset($exif['MimeType']))?$exif['MimeType']:'';
     $image = false;
-    switch ( $mime_type ) {
-      case 'image/jpeg':
-        $image = imagecreatefromjpeg($path);
-        break;
-      case 'image/png':
-        $image = imagecreatefrompng($path);
-        break;
-      case 'image/gif':
-        $image = imagecreatefromgif($path);
-        break;
-    }
-    $orientation = $exif['Orientation'];
+    $orientation = (isset($exif['Orientation']))?$exif['Orientation']:'';
     if($image){
-      if (!empty($orientation)) {
+      if ($orientation!='') {
+        if($orientation==3 || $orientation==6 || $orientation==8){
+          switch ( $mime_type ) {
+            case 'image/jpeg':
+              $image = imagecreatefromjpeg($path);
+              break;
+            case 'image/png':
+              $image = imagecreatefrompng($path);
+              break;
+            case 'image/gif':
+              $image = imagecreatefromgif($path);
+              break;
+          }
+        }
         $rotated = false;
         switch ($orientation) {
           case 3:
@@ -860,7 +882,7 @@ class The_Media_Uploader {
             $rotated = true;
             break;
         }
-        if($rotated){
+        if($rotated && ($orientation==3 || $orientation==6 || $orientation==8)){
           switch ( $mime_type ) {
             case 'image/jpeg':
               imagejpeg($image, $path, 100);

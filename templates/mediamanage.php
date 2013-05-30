@@ -5,7 +5,7 @@
   $taxonomy      = (isset($template_params['taxonomy']))?$template_params['taxonomy']:'';
 ?>
 
-<li media-id="<?=$attachment_id?>" media-type="<?=$media_type?>" media-caption="<?=$template_params['media_caption']?>" media-description="<?=$template_params['media_description']?>"<?=($taxonomy && $taxonomy!="")?'taxonomy="'.$taxonomy.'"':""?>>
+<li media-id="<?=$attachment_id?>" media-type="<?=$media_type?>" media-caption="<?=(isset($template_params['media_caption']))?$template_params['media_caption']:''?>" media-description="<?=(isset($template_params['media_description']))?$template_params['media_description']:''?>"<?=($taxonomy && $taxonomy!="")?'taxonomy="'.$taxonomy.'"':""?>>
   <a class="thumbnail">
     <img src="<?=$template_params['attachment_thumb']?>" id="thumb_<?=$attachment_id?>" />
     <div class="thumb-trash"><i class="icon-trash"></i></div>
