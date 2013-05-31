@@ -113,10 +113,10 @@ class The_Media_Uploader {
     // Globalize variable tobe able to access in the template
     global $template_params;
 
-    $img_id = $_POST["img_id"];
-    $post_id = $_POST["post_id"];
-    $template = $_POST["template"];
-    $page = $_POST["page"];
+    $img_id = (isset($_POST["img_id"]))?$_POST["img_id"]:'';
+    $post_id = (isset($_POST["post_id"]))?$_POST["post_id"]:'';
+    $template = (isset($_POST["template"]))?$_POST["template"]:'';
+    $page = (isset($_POST["page"]))?$_POST["page"]:'';
     if($post_id=='') $post_id=0;
 
     // Handle file upload

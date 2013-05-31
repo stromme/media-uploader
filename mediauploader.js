@@ -59,7 +59,10 @@ $.fn.mediauploader = function() {
           // When a file was added in the queue
           uploader.bind('FilesAdded', function(up, files){
             $.each(files, function(i, file) {
-              target.prepend('<li class="new_thumb_'+file.id+'"><a><span class="loader"></span></a></li>');
+              var new_block = '<li class="new_thumb_'+file.id+'"><a><span class="loader"></span></a></li>';
+              // Append only for showroom images
+              if(elmSettings.data_template=='showroom') target.append(new_block);
+              else target.prepend(new_block);
               $('.new_thumb_'+file.id+' .loader', target).spin('medium-left', '#000000');
             });
             $('.photo_upload_error').fadeOut('fast', function(){ $(this).remove() });
@@ -678,10 +681,12 @@ function add_video(video_link, data_target, data_template, data_page, success_ca
   // Set target element list container
   var target = $('#'+data_target);
 
+  var insert_method = (data_template=='showroom')?'append':'prepend';
+
   var post = new AjaxPost(data, {
     'spinner': new LoadingSpinner({
       'reference_elm': target,
-      'insert_method': 'prepend',
+      'insert_method': insert_method,
       'loader_tag': 'li',
       'loader_style': ' ',
       'spinner_style': ' ',
