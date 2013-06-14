@@ -607,7 +607,7 @@ function default_thumb_trash_action(){
     .off('click.mediauploader', '.thumb-trash')
     .on('click.mediauploader', '.thumb-trash', function(e) {
     e.preventDefault();
-    var container  = $('#delete-confirm');
+    var container  = $('#delete-media-confirm');
     var button     = $('.action-confirm', container);
     var list       = $(this).closest('li');
     var media_id   = list.attr('media-id');
@@ -734,7 +734,7 @@ function confirm_delete_media(media_id, media_type, success_callback, failed_cal
     'media_id': media_id,
     'media_type': media_type
   };
-  var container = $("#delete-confirm");
+  var container = $("#delete-media-confirm");
   var button = $('.action-confirm', container);
   var spinner = false;
   if(container && button && button.length>0){
