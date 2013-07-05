@@ -759,11 +759,14 @@ class The_Media_Uploader {
             if($post->post_type=='attachment'){
               $template_params['attachment_thumb'] = wp_get_attachment_thumb_url($attachment_id);
               $template_params['media_type'] = 'photo';
+              $media_attach = wp_get_attachment_image_src($attachment_id, 'large');
+              $template_params['attachment_large'] = $media_attach[0];
             }
             else {
               $video_thumbnail = get_post_meta($attachment_id, 'video_thumbnail', true);
               $template_params['attachment_thumb'] = $video_thumbnail;
               $template_params['media_type'] = 'video';
+              $template_params['attachment_large'] = str_replace('watch?v=', 'embed/', $post->post_title).'?rel=0&autoplay=1';
             }
             // In our media, excerpt is caption
             $template_params['media_caption'] = $post->post_excerpt;
