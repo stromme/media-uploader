@@ -589,6 +589,7 @@ $( document ).ready( function() {
           container.modal('hide');
           list.attr('media-caption', media_caption.val());
           list.attr('media-description', media_description.val());
+          $('#media-title-'+media_id).html(((media_caption.val()!='')?'<strong>'+media_caption.val()+'</strong>':'')+((media_description.val()!='' && media_description.val()!='')?'<br />':'')+((media_description.val()!='')?media_description.val():''));
           tag_link.html((media_caption.val()!='' || media_description.val()!='')?'Edit description':'Add a description');
           // Reset the form
           media_caption.val('');
