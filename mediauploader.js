@@ -643,7 +643,7 @@ function default_thumb_trash_action(){
         e.preventDefault();
         if (!button.hasClass('disabled')) {
           button.addClass('disabled');
-          confirm_delete_media(media_id, media_type, function() {
+          confirm_delete_media(media_id, media_type, false, function() {
             setTimeout(function(){
               list.fadeOut(300, function() {
                 $(this).remove();
@@ -724,15 +724,17 @@ function add_video(video_link, data_target, data_template, data_page, success_ca
  *
  * @param media_id
  * @param media_type
+ * @param no_parent // Only remove is parent is not exist
  * @param success_callback
  * @param failed_callback
  */
-function confirm_delete_media(media_id, media_type, success_callback, failed_callback){
+function confirm_delete_media(media_id, media_type, no_parent, success_callback, failed_callback){
   // Load ajax data
   var data = {
     action: 'delete_media',
     'media_id': media_id,
-    'media_type': media_type
+    'media_type': media_type,
+    'no_parent': (no_parent)?1:0
   };
   var container = $("#delete-media-confirm");
   var button = $('.action-confirm', container);

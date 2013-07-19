@@ -627,31 +627,44 @@ class The_Media_Uploader {
     $delete_status = 0;
     $media_post = get_post($media_id);
 
-    // Different type, different ways of deleting post.
-    // Delete photo as an attachment so wp will remove all the images files
-    if($media_type=='photo'){
-      // Delete attachment, attachment id = $media_id, force_delete = true
-      $delete_status = wp_delete_attachment($media_id, true);
-    }
-    // Video is a post
-    else if($media_type=='video'){
-      // Delete post, post id = $media_id, force_delete = true
-      $delete_status = wp_delete_post($media_id, true);
-    }
+    // It's already deleted, no need to hassle with it
+    if($media_post){
+      $no_parent = (isset($_POST['no_parent']) && $_POST['no_parent']==1)?true:false;
+      $can_delete = true;
+      if($no_parent && $media_post->post_parent>0){
+        $can_delete = false;
+      }
+      if($can_delete){
+        // Different type, different ways of deleting post.
+        // Delete photo as an attachment so wp will remove all the images files
+        if($media_type=='photo'){
+          $delete_status = wp_delete_attachment($media_id, true);
+        }
+        // Video is a post
+        else if($media_type=='video'){
+          // Delete post, post id = $media_id, force_delete = true
+          $delete_status = wp_delete_post($media_id, true);
+        }
 
-    // Create status code and status message
-    if($delete_status){
-      do_action('update_site_health', 'media');
-      $status_code = 1;
-      $status_message = "Successfully deleting ".$media_type;
+        // Create status code and status message
+        if($delete_status){
+          do_action('update_site_health', 'media');
+          $status_code = 1;
+          $status_message = "Successfully deleting ".$media_type;
+        }
+        else {
+          $status_code = 0;
+          $status_message = "Failed to delete ".$media_type;
+        }
+      }
+      else {
+        $status_code = 1;
+        $status_message = "Media not deleted ".$media_type.", parent exist";
+      }
     }
     else {
-      $status_code = 0;
-      $status_message = "Failed to delete ".$media_type;
+      $status_code = -1;
     }
-
-    // It's already deleted, no need to hassle with it
-    if(!$media_post) $status_code = -1;
 
     // Return ajax response as json string
     die(json_encode(array('status'=>$status_code,'status_message'=>$status_message)));
