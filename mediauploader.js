@@ -66,6 +66,7 @@ $.fn.mediauploader = function() {
               $('.new_thumb_'+file.id+' .loader', target).spin('medium-left', '#000000');
             });
             $('.photo_upload_error').fadeOut('fast', function(){ $(this).remove() });
+            $('.project-publish').addClass('disabled');
             up.refresh();
             up.start();
           });
@@ -75,6 +76,7 @@ $.fn.mediauploader = function() {
 
           // When the file was uploaded
           uploader.bind('FileUploaded', function(up, file, response){
+            $('.project-publish').removeClass('disabled');
             if(typeof(response=="Object") && response.status==0){
               setTimeout(function(){
                 $('li.new_thumb_'+file.id, target).remove();
