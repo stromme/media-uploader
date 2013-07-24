@@ -685,6 +685,7 @@ function add_video(video_link, data_target, data_template, data_page, success_ca
 
   var insert_method = (data_template=='showroom')?'append':'prepend';
 
+  $('.project-publish').addClass('disabled');
   var post = new AjaxPost(data, {
     'spinner': new LoadingSpinner({
       'reference_elm': target,
@@ -699,6 +700,7 @@ function add_video(video_link, data_target, data_template, data_page, success_ca
   // Ajax replied
   function(response){
     try {
+      $('.project-publish').removeClass('disabled');
       var json_response = JSON.parse(response);
       if(json_response.status==1){
         // If success, replace our newly created list with real content
