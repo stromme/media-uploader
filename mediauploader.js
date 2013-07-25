@@ -570,6 +570,7 @@ $( document ).ready( function() {
   $(document).on('click', '.action-tag-media', function(e) {
     e.preventDefault();
     var container = $('#tag-media');
+    var tag_link = $(this);
     var button = $('.save', container);
     var list = $(this).closest('li');
     var media_id = list.attr('media-id');
@@ -577,9 +578,9 @@ $( document ).ready( function() {
     var media_caption = $('#media-caption');
     var media_description = $('#media-description');
     media_caption.val(list.attr('media-caption'));
-    media_description.val(list.attr('media-description'))
+    media_description.val(list.attr('media-description'));
     // Nested modal workaround
-    jQuery().modal.Constructor.prototype.enforceFocus = function(){};;
+    jQuery().modal.Constructor.prototype.enforceFocus = function(){};
     container.modal();
     /* Do save media tag */
     button.unbind('click').click(function(e) {
@@ -590,6 +591,8 @@ $( document ).ready( function() {
           container.modal('hide');
           list.attr('media-caption', media_caption.val());
           list.attr('media-description', media_description.val());
+          $('#media-title-'+media_id).html(((media_caption.val()!='')?'<strong>'+media_caption.val()+'</strong>':'')+((media_description.val()!='' && media_description.val()!='')?'<br />':'')+((media_description.val()!='')?media_description.val():''));
+          tag_link.html((media_caption.val()!='' || media_description.val()!='')?'Edit description':'Add a description');
           // Reset the form
           media_caption.val('');
           media_description.val('');
@@ -782,56 +785,43 @@ function confirm_delete_media(media_id, media_type, no_parent, success_callback,
  * @param failed_callback
  */
 function confirm_tag_media(media_id, media_type, media_caption, media_description, success_callback, failed_callback){
-  // Input validation
-  var exists = false;
-  if(media_caption && media_caption.length>0){
-    exists = true;
-  }
-  if(media_description && media_description.length>0){
-    exists = true;
-  }
   var container = $('#tag-media');
   var button = $('.save', container);
   // If any of the content not empty (either caption or description)
-  if(exists){
-    var data = {
-      action: 'tag_media',
-      'media_id': media_id,
-      'media_type': media_type,
-      'media_caption': media_caption,
-      'media_description': media_description
-    };
-    var post = new AjaxPost(data, {
-      'spinner': new LoadingSpinner({
-        'reference_elm': button,
-        'insert_method': 'prepend',
-        'in_parent': true
-      })
-    },
-    // Ajax replied
-    function(response){
-      try {
-        var json_response = JSON.parse(response);
-        if(json_response.status==1){
-          bootstrap_alert(json_response.status_message, 'success');
-          // Do success callback if updating is success
-          if(typeof(success_callback)=='function') success_callback();
-        }
-        else {
-          bootstrap_alert(json_response.status_message, 'error');
-          if(typeof(failed_callback)=='function') failed_callback();
-        }
-      } catch (e) {
-        bootstrap_alert('Connection error', 'error');
+
+  var data = {
+    action: 'tag_media',
+    'media_id': media_id,
+    'media_type': media_type,
+    'media_caption': media_caption,
+    'media_description': media_description
+  };
+  var post = new AjaxPost(data, {
+    'spinner': new LoadingSpinner({
+      'reference_elm': button,
+      'insert_method': 'prepend',
+      'in_parent': true
+    })
+  },
+  // Ajax replied
+  function(response){
+    try {
+      var json_response = JSON.parse(response);
+      if(json_response.status==1){
+        bootstrap_alert(json_response.status_message, 'success');
+        // Do success callback if updating is success
+        if(typeof(success_callback)=='function') success_callback();
       }
-    },
-    function(){
-      if(typeof(failed_callback)=='function') failed_callback();
-    });
-    post.doAjaxPost();
-  }
-  else {
+      else {
+        bootstrap_alert(json_response.status_message, 'error');
+        if(typeof(failed_callback)=='function') failed_callback();
+      }
+    } catch (e) {
+      bootstrap_alert('Connection error', 'error');
+    }
+  },
+  function(){
     if(typeof(failed_callback)=='function') failed_callback();
-  }
-  // else do nothing if both inputs are empty
+  });
+  post.doAjaxPost();
 }
