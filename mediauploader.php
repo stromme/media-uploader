@@ -229,7 +229,7 @@ class The_Media_Uploader {
         // Get permalink (in case needed), this also creates many file with various sizes
         $image = wp_get_image_editor($status["file"]); // Return an implementation that extends <tt>WP_Image_Editor</tt>
         if(!is_wp_error($image)){
-          $image->resize(300, 200, false);
+          $image->resize(300, 200, false); //abstract public function resize( $max_w, $max_h, $crop = false );
           $image->save($status["file"]);
         }
 
@@ -663,7 +663,8 @@ class The_Media_Uploader {
       }
     }
     else {
-      $status_code = -1;
+      $status_code = 1;
+      $status_message = ucfirst($media_type)." not exist";
     }
 
     // Return ajax response as json string
