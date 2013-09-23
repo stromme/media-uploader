@@ -43,10 +43,14 @@ $.fn.mediauploader = function() {
           var ua = navigator.userAgent;
           if(ua.indexOf("Android")>=0){
             var androidversion = parseFloat(ua.slice(ua.indexOf("Android")+8));
-            if(androidversion < 2.3){
+            if(androidversion < 2.4){
               elmBaseSettings["runtimes"] = 'html4';
               elmBaseSettings["multipart_params"]["runtime"] = 'html4';
             }
+          }
+          else if (ua.indexOf("NetFront")>0){
+            elmBaseSettings["runtimes"] = 'html4';
+            elmBaseSettings["multipart_params"]["runtime"] = 'html4';
           }
           //--oldphone
 
