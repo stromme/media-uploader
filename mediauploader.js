@@ -40,7 +40,7 @@ $.fn.mediauploader = function() {
           }
 
           // Only for old phone browser, such as android 2
-          /*var ua = navigator.userAgent;
+          var ua = navigator.userAgent;
           if(ua.indexOf("Android")>=0){
             var androidversion = parseFloat(ua.slice(ua.indexOf("Android")+8));
             if(androidversion < 2.4){
@@ -52,7 +52,7 @@ $.fn.mediauploader = function() {
           else if (ua.indexOf("NetFront")>0){
             elmBaseSettings["runtimes"] = 'html4';
             elmBaseSettings["multipart_params"]["runtime"] = 'html4';
-          }*/
+          }
           //--oldphone
 
           var uploader = new plupload.Uploader(elmBaseSettings);
