@@ -53,6 +53,11 @@ $.fn.mediauploader = function() {
             elmBaseSettings["runtimes"] = 'html4';
             elmBaseSettings["multipart_params"]["runtime"] = 'html4';
           }
+          // Only for phone with code SGH and SCH
+          else if (ua.indexOf("SGH-")>0 || ua.indexOf("SCH-")>0){
+            elmBaseSettings["runtimes"] = 'html4';
+            elmBaseSettings["multipart_params"]["runtime"] = 'html4';
+          }
           //--oldphone
 
           var uploader = new plupload.Uploader(elmBaseSettings);
