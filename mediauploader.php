@@ -493,7 +493,6 @@ class The_Media_Uploader {
 
     ?>
       <div class="wrap">
-        <?php screen_icon(); ?>
         <h2>Media Uploader Settings</h2>
         <form method="post" action="">
           <table class="form-table">
