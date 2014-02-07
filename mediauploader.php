@@ -99,6 +99,10 @@ class The_Media_Uploader {
       // Load plupload settings into javascript
       wp_localize_script('the-media-uploader', 'plupload_base_settings',$plupload_init);
       wp_enqueue_style( 'the-media-uploader', plugins_url( 'mediauploader.css', __FILE__ ));
+      $net = get_site_option('tb_network_setting');
+      if(!isset($net['name']) || (isset($net['name']) && $net['name']!='WindowCleaning.com')){
+        wp_localize_script('the-media-uploader', 'logo_extension', 'jpg,png,jpeg,gif');
+      }
     }
   }
 

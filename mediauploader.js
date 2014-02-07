@@ -193,6 +193,10 @@ $.fn.logouploader = function(options) {
         //--oldphone
 
         elmBaseSettings["filters"][0]["extensions"] = 'png'; // Just png for logo
+        if(logo_extension && logo_extension!=''){
+          elmBaseSettings["filters"][0]["extensions"] = logo_extension;
+        }
+
         var logo_uploader = new plupload.Uploader(elmBaseSettings);
         logo_uploader.init();
         $('#'+uploader_id+' div').removeAttr('style');
