@@ -59,6 +59,9 @@ $.fn.mediauploader = function() {
             elmBaseSettings["multipart_params"]["runtime"] = 'html4';
           }
           //--oldphone
+          // Max size 1200x1200px
+          elmBaseSettings["resize"]["width"] = "1200";
+          elmBaseSettings["resize"]["height"] = "1200";
 
           var uploader = new plupload.Uploader(elmBaseSettings);
           //uploader.bind('Init', function(up){});
