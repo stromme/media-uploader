@@ -196,7 +196,7 @@ $.fn.logouploader = function(options) {
         //--oldphone
 
         elmBaseSettings["filters"][0]["extensions"] = 'png'; // Just png for logo
-        if(logo_extension && logo_extension!=''){
+        if(typeof(logo_extension)!="undefined" && logo_extension!=''){
           elmBaseSettings["filters"][0]["extensions"] = logo_extension;
         }
 
