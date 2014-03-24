@@ -634,51 +634,41 @@ function default_thumb_trash_action(){
     var list       = $(this).closest('li');
     var media_id   = list.attr('media-id');
     var media_type = list.attr('media-type');
-    var show_modal = true;
+    //var show_modal = true;
     var on_showroom = false;
 
-    // If we're in project modal
     if($(this).closest('#toolbox-activity').length>0){
-      var thumbnails_container = $(this).closest('.media-thumbnails');
-      var thumbnails = $('li', thumbnails_container);
-      if(thumbnails.length<=1){
-        bootstrap_alert('This is your last media for current project. Please leave at least one photo or video', 'error');
-        show_modal = false;
-      }
       on_showroom = true;
     }
-    //--in-project-modal
 
     // Show modal or alert? Depend on where we are now: project modal or not
-    if(show_modal){
-      // Nested modal workaround;
-      jQuery().modal.Constructor.prototype.enforceFocus = function(){};
-      container.modal();
-      container.removeAttr('style');
-      // If we are on showroom, give a little cleaner touch on nested modal
-      if(on_showroom){
-        container.css('z-index', 1051);
-        $('.modal-backdrop').last().css('z-index', 1050);
-      }
-      //--on-showroom
-      button.unbind('click').click(function(e) {
-        e.preventDefault();
-        if (!button.hasClass('disabled')) {
-          button.addClass('disabled');
-          confirm_delete_media(media_id, media_type, false, function() {
-            setTimeout(function(){
-              list.fadeOut(300, function() {
-                $(this).remove();
-              });
-            }, 600);
-            container.modal('hide');
-            button.removeClass('disabled');
-          }, function() {
-            button.removeClass('disabled');
-          });
-        }
-      });
+    // Nested modal workaround;
+    jQuery().modal.Constructor.prototype.enforceFocus = function(){};
+    container.modal();
+    container.removeAttr('style');
+    // If we are on showroom, give a little cleaner touch on nested modal
+    if(on_showroom){
+      container.css('z-index', 1051);
+      $('.modal-backdrop').last().css('z-index', 1050);
     }
+    //--on-showroom
+    button.unbind('click').click(function(e) {
+      e.preventDefault();
+      if (!button.hasClass('disabled')) {
+        button.addClass('disabled');
+        confirm_delete_media(media_id, media_type, false, function() {
+          setTimeout(function(){
+            list.fadeOut(300, function() {
+              $(this).remove();
+            });
+          }, 600);
+          container.modal('hide');
+          button.removeClass('disabled');
+        }, function() {
+          button.removeClass('disabled');
+        });
+      }
+    });
   });
 }
 
