@@ -12,12 +12,12 @@
     <img src="<?=$template_params['attachment_thumb']?>" id="thumb_<?=$attachment_id?>" />
   </a>
   <div class="mobile-spacer"></div>
-  <div class="thumb-trash"><i class="icon-trash"></i></div>
+  <a href="" class="thumb-trash"><i class="icon-trash"></i></a>
   <?php
   if (isset($template_params['favorite']) && $template_params['favorite']) {
-    echo '<div class="thumb-favorite thumb-favorite-selected touch-check" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Your favorite photo of this project."><i class="icon-ok icon-white"></i></div>';
+    echo '<a href="" class="thumb-favorite thumb-favorite-selected touch-check" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Your favorite photo of this project."><i class="icon-ok icon-white"></i></a>';
   } else {
-    echo '<div class="thumb-favorite touch-check" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Mark the photo as your favorite."><i class="icon-ok icon-white"></i></div>';
+    echo '<a href="" class="thumb-favorite touch-check" data-target="'.$attachment_id.'" rel="tooltip" data-placement="top" title="Mark the photo as your favorite."><i class="icon-ok icon-white"></i></a>';
   }
   ?>
 </li>

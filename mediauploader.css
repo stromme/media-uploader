@@ -2,7 +2,7 @@
   position: relative;
 }
 
-.media-thumbnails>li>a {
+.media-thumbnails>li>.thumbnail {
   display: block;
   position: relative;
 }

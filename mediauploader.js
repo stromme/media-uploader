@@ -678,9 +678,9 @@ function default_thumb_trash_action(){
  * @param video_link
  * @param data_target
  * @param data_template
+ * @param data_page
  * @param success_callback
  * @param failed_callback
- * @return void
  */
 function add_video(video_link, data_target, data_template, data_page, success_callback, failed_callback){
   // If video link is not empty (validate on server side later)

@@ -6,10 +6,10 @@
 ?>
 
 <li media-id="<?=$attachment_id?>" media-type="<?=$media_type?>" media-caption="<?=(isset($template_params['media_caption']))?$template_params['media_caption']:''?>" media-description="<?=(isset($template_params['media_description']))?$template_params['media_description']:''?>"<?=($taxonomy && $taxonomy!="")?'taxonomy="'.$taxonomy.'"':""?>>
-  <a class="thumbnail">
+  <span class="thumbnail">
     <img src="<?=$template_params['attachment_thumb']?>" id="thumb_<?=$attachment_id?>" />
-    <div class="thumb-trash"><i class="icon-trash"></i></div>
-  </a>
+    <a href="" class="thumb-trash"><i class="icon-trash"></i></a>
+  </span>
   <div class="media-controls touch-check-media <?=($media_type=="video")?"show-video-play":""?>">
     <a href="<?=$template_params['attachment_large']?>" data-title="media-title-<?=$attachment_id?>" class="show-image colorbox-element" <?=($media_type=="video")?"data-video=\"1\"":""?> rel="gallery-<?=$attachment_id?>"><i class="<?=($media_type=="video")?"icon-media-play":"icon-media-expand"?>"></i></a>
   </div>
