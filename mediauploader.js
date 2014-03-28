@@ -28,6 +28,7 @@ $.fn.mediauploader = function() {
           var uploader_id = "uploader_"+elmSettings.data_target_id;
           var plupload_basic = "<div id='"+uploader_id+"' style='float:right;display:inline-block;width:0;height:0;overflow:hidden;' class='plupload-uploader-container'></div>";
           //$(plupload_basic).insertAfter(elm);
+          $(plupload_basic).remove();
           $('body').append(plupload_basic);
           elmBaseSettings["browse_button"] = elm.attr('id');
           elmBaseSettings["container"] = uploader_id;
