@@ -73,11 +73,11 @@ $.fn.mediauploader = function() {
           // When a file was added in the queue
           uploader.bind('FilesAdded', function(up, files){
             $.each(files, function(i, file) {
-              var new_block = '<li class="new_thumb_'+file.id+'"><a><span class="loader"></span></a></li>';
+              var new_block = '<li class="new_thumb_'+file.id+'"><a class="thumbnail"><span class="upload-counter">0%</span><span class="upload-progress"><span class="fill"></span></span></a></li>';
               // Append only for showroom images
               if(elmSettings.data_template=='showroom') target.append(new_block);
               else target.prepend(new_block);
-              $('.new_thumb_'+file.id+' .loader', target).spin('medium-left', '#000000');
+              //$('.new_thumb_'+file.id+' .loader', target).spin('medium-left', '#000000');
             });
             $('.photo_upload_error').fadeOut('fast', function(){ $(this).remove() });
             $('.project-publish').addClass('disabled');
@@ -85,8 +85,15 @@ $.fn.mediauploader = function() {
             up.start();
           });
 
-          // Upload progress (not used at the moment)
-          //uploader.bind('UploadProgress', function(up, file){});
+          // Upload progress
+          uploader.bind('UploadProgress', function(up, file){
+            $('.new_thumb_'+file.id+' .upload-progress>.fill', target).css('width', up.total.percent+'%');
+            if(up.total.percent==25 || up.total.percent==50 || up.total.percent==75 ||  up.total.percent==100){
+              $('.new_thumb_'+file.id+' .upload-progress', target).removeClass('p25 p50 p75');
+              $('.new_thumb_'+file.id+' .upload-progress', target).addClass('p'+up.total.percent);
+            }
+            $('.new_thumb_'+file.id+' .upload-counter', target).html(up.total.percent+'%');
+          });
 
           // When the file was uploaded
           uploader.bind('FileUploaded', function(up, file, response){
@@ -211,9 +218,9 @@ $.fn.logouploader = function(options) {
         logo_uploader.bind('FilesAdded', function(up, files){
           $.each(files, function(i, file){
             target.fadeOut(200, function(){
-              $('<div class="new_logo_'+file.id+' logo-loader"><span class="loader"></span></div>').insertAfter(target);
+              $('<div class="new_logo_'+file.id+' logo-loader"><span class="upload-counter">0%</span><span class="upload-progress"><span class="fill"></span></span></div>').insertAfter(target);
               logo_loader = $('.new_logo_'+file.id, target.parent());
-              $('.loader', logo_loader).spin('medium-left', '#000000');
+              //$('.loader', logo_loader).spin('medium-left', '#000000');
               logo_loader.css('visibility', 'visible');
             });
           });
@@ -222,8 +229,15 @@ $.fn.logouploader = function(options) {
           up.start();
         });
 
-        // Upload progress (not used at the moment)
-        //uploader.bind('UploadProgress', function(up, file){});
+        // Upload progress
+        logo_uploader.bind('UploadProgress', function(up, file){
+          $('.new_logo_'+file.id+' .upload-progress>.fill').css('width', up.total.percent+'%');
+          if(up.total.percent==25 || up.total.percent==50 || up.total.percent==75 ||  up.total.percent==100){
+            $('.new_logo_'+file.id).removeClass('p25 p50 p75');
+            $('.new_logo_'+file.id+' .upload-progress').addClass('p'+up.total.percent);
+          }
+          $('.new_logo_'+file.id+' .upload-counter').html(up.total.percent+'%');
+        });
 
         // When the file was uploaded
         logo_uploader.bind('FileUploaded', function(up, file, response){
@@ -246,14 +260,14 @@ $.fn.logouploader = function(options) {
 
               var json_response = JSON.parse(response["response"]);
               logo_loader.fadeOut(200, function(){
-                $(this).remove();
+                logo_loader.remove();
                 if(json_response["status_code"]==1){
                   target.attr('src', json_response["url"]);
+                  target.fadeIn(300);
                 }
                 else {
                   cmd.showError(json_response["error"]);
                 }
-                target.fadeIn(300);
               });
             } catch (e) {
               bootstrap_alert('Connection error', 'error');
@@ -352,9 +366,9 @@ $.fn.userphotouploader = function(options) {
         logo_uploader.bind('FilesAdded', function(up, files){
           $.each(files, function(i, file){
             target.fadeOut(200, function(){
-              $('<div class="new_photo_'+file.id+' photo-loader"><span class="loader"></span></div>').insertAfter(target);
+              $('<div class="new_photo_'+file.id+' photo-loader"><span class="upload-counter">0%</span><span class="upload-progress"><span class="fill"></span></span></div>').insertAfter(target);
               logo_loader = $('.new_photo_'+file.id, target.parent());
-              $('.loader', logo_loader).spin('medium-left', '#000000');
+              //$('.loader', logo_loader).spin('medium-left', '#000000');
               logo_loader.css('visibility', 'visible');
             });
           });
@@ -362,8 +376,15 @@ $.fn.userphotouploader = function(options) {
           up.start();
         });
 
-        // Upload progress (not used at the moment)
-        //uploader.bind('UploadProgress', function(up, file){});
+        // Upload progress
+        logo_uploader.bind('UploadProgress', function(up, file){
+          $('.new_photo_'+file.id+' .upload-progress>.fill').css('width', up.total.percent+'%');
+          if(up.total.percent==25 || up.total.percent==50 || up.total.percent==75 ||  up.total.percent==100){
+            $('.new_photo_'+file.id).removeClass('p25 p50 p75');
+            $('.new_photo_'+file.id+' .upload-progress').addClass('p'+up.total.percent);
+          }
+          $('.new_photo_'+file.id+' .upload-counter').html(up.total.percent+'%');
+        });
 
         // When the file was uploaded
         logo_uploader.bind('FileUploaded', function(up, file, response){
@@ -386,14 +407,14 @@ $.fn.userphotouploader = function(options) {
 
               var json_response = JSON.parse(response["response"]);
               logo_loader.fadeOut(200, function(){
-                $(this).remove();
+                logo_loader.remove();
                 if(json_response["status_code"]==1){
                   target.attr('src', json_response["url"]);
+                  target.fadeIn(300);
                 }
                 else {
                   cmd.showError('Failed to upload new logo');
                 }
-                target.fadeIn(300);
               });
             } catch (e) {
               bootstrap_alert('Connection error', 'error');
@@ -494,9 +515,9 @@ $.fn.accoladeuploader = function() {
           up.settings.multipart_params["post_id"] = (target.attr('post-id'))?target.attr('post-id'):"";
           $.each(files, function(i, file){
             target.fadeOut(200, function(){
-              $('<div class="new_accolade_image_'+file.id+' accolade-image-loader"><span class="loader"></span></div>').insertAfter(target);
+              $('<div class="new_accolade_image_'+file.id+' accolade-image-loader"><span class="upload-counter">0%</span><span class="upload-progress"><span class="fill"></span></span></div>').insertAfter(target);
               accolade_image_loader = $('.new_accolade_image_'+file.id, target.parent());
-              $('.loader', accolade_image_loader).spin('medium-left', '#000000');
+              //$('.loader', accolade_image_loader).spin('medium-left', '#000000');
               accolade_image_loader.css('visibility', 'visible');
             });
           });
@@ -505,7 +526,14 @@ $.fn.accoladeuploader = function() {
         });
 
         // Upload progress (not used at the moment)
-        //uploader.bind('UploadProgress', function(up, file){});
+        accolade_uploader.bind('UploadProgress', function(up, file){
+          $('.new_accolade_image_'+file.id+' .upload-progress>.fill').css('width', up.total.percent+'%');
+          if(up.total.percent==25 || up.total.percent==50 || up.total.percent==75 ||  up.total.percent==100){
+            $('.new_accolade_image_'+file.id).removeClass('p25 p50 p75');
+            $('.new_accolade_image_'+file.id+' .upload-progress').addClass('p'+up.total.percent);
+          }
+          $('.new_accolade_image_'+file.id+' .upload-counter').html(up.total.percent+'%');
+        });
 
         // When the file was uploaded
         accolade_uploader.bind('FileUploaded', function(up, file, response){
