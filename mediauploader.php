@@ -54,9 +54,9 @@ class The_Media_Uploader {
   function action_enqueue_scripts(){
     if(is_user_logged_in() && strstr($_SERVER['REQUEST_URI'], 'toolbox')){
       if(!wp_script_is('toolbox-spinner'))
-        wp_enqueue_script('toolbox-spinner', plugins_url('spinner.min.js', __FILE__), array('jquery'));
-      wp_enqueue_script( 'plupload', includes_url() .'js/plupload/plupload.full.min.js', array('jquery'));
-      wp_enqueue_script('the-media-uploader', plugins_url('mediauploader.js', __FILE__));
+        wp_enqueue_script('toolbox-spinner', plugins_url('spinner.min.js', __FILE__), array('jquery'), '20121205');
+      wp_enqueue_script('custom-plupload-core', plugins_url('plupload/plupload.full.js', __FILE__), array(), '1.5.7');
+      wp_enqueue_script('the-media-uploader', plugins_url('mediauploader.js', __FILE__), array(), '20121205');
 
       $settings = (get_site_option('mediauploader_settings'))?get_site_option('mediauploader_settings'):get_blog_option(1, 'mediauploader_settings');
       if(!$settings){
@@ -78,8 +78,8 @@ class The_Media_Uploader {
         'multiple_queues' => false,
         'max_file_size' => $settings["max_upload_size"].'b',
         'url' => admin_url('admin-ajax.php'),
-        'flash_swf_url' => includes_url() .'js/plupload/plupload.flash.swf',
-        'silverlight_xap_url' => includes_url() .'js/plupload/plupload.silverlight.xap',
+        'flash_swf_url' => plugins_url('media-uploader/plupload/plupload.flash.swf'),
+        'silverlight_xap_url' => plugins_url('media-uploader/plupload/plupload.silverlight.xap'),
         'filters' => array(array('title' => __('Image Files'), 'extensions' => "jpg,png,jpeg,gif")),
         'multipart' => true,
         'urlstream_upload' => true,

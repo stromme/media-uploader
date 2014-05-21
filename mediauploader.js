@@ -87,12 +87,28 @@ $.fn.mediauploader = function() {
 
           // Upload progress
           uploader.bind('UploadProgress', function(up, file){
-            $('.new_thumb_'+file.id+' .upload-progress>.fill', target).css('width', up.total.percent+'%');
-            if(up.total.percent==25 || up.total.percent==50 || up.total.percent==75 ||  up.total.percent==100){
-              $('.new_thumb_'+file.id+' .upload-progress', target).removeClass('p25 p50 p75');
-              $('.new_thumb_'+file.id+' .upload-progress', target).addClass('p'+up.total.percent);
+            var thumb = '.new_thumb_'+file.id;
+            var thumb_progress = thumb+' .upload-progress';
+            var thumb_fill_elm = $(thumb_progress+'>.fill', target);
+            var thumb_progress_elm = $(thumb_progress, target);
+            var thumb_counter_elm = $(thumb+' .upload-counter', target);
+            thumb_fill_elm.css('width', up.total.percent+'%');
+            if(up.total.percent>=100 && !thumb_progress_elm.hasClass('p100')){
+              thumb_progress_elm.removeClass('p25 p50 p75');
+              thumb_progress_elm.addClass('p100');
             }
-            $('.new_thumb_'+file.id+' .upload-counter', target).html(up.total.percent+'%');
+            else if(up.total.percent>=75 && !thumb_progress_elm.hasClass('p75')){
+              thumb_progress_elm.removeClass('p25 p50');
+              thumb_progress_elm.addClass('p75');
+            }
+            else if(up.total.percent>=50 && !thumb_progress_elm.hasClass('p50')){
+              thumb_progress_elm.removeClass('p25');
+              thumb_progress_elm.addClass('p50');
+            }
+            else if(up.total.percent>=25 && !thumb_progress_elm.hasClass('p25')){
+              thumb_progress_elm.addClass('p25');
+            }
+            thumb_counter_elm.html(up.total.percent+'%');
           });
 
           // When the file was uploaded
@@ -231,12 +247,28 @@ $.fn.logouploader = function(options) {
 
         // Upload progress
         logo_uploader.bind('UploadProgress', function(up, file){
-          $('.new_logo_'+file.id+' .upload-progress>.fill').css('width', up.total.percent+'%');
-          if(up.total.percent==25 || up.total.percent==50 || up.total.percent==75 ||  up.total.percent==100){
-            $('.new_logo_'+file.id).removeClass('p25 p50 p75');
-            $('.new_logo_'+file.id+' .upload-progress').addClass('p'+up.total.percent);
+          var thumb = '.new_logo_'+file.id;
+          var thumb_progress = thumb+' .upload-progress';
+          var thumb_fill_elm = $(thumb_progress+'>.fill');
+          var thumb_progress_elm = $(thumb_progress);
+          var thumb_counter_elm = $(thumb+' .upload-counter');
+          thumb_fill_elm.css('width', up.total.percent+'%');
+          if(up.total.percent>=100 && !thumb_progress_elm.hasClass('p100')){
+            thumb_progress_elm.removeClass('p25 p50 p75');
+            thumb_progress_elm.addClass('p100');
           }
-          $('.new_logo_'+file.id+' .upload-counter').html(up.total.percent+'%');
+          else if(up.total.percent>=75 && !thumb_progress_elm.hasClass('p75')){
+            thumb_progress_elm.removeClass('p25 p50');
+            thumb_progress_elm.addClass('p75');
+          }
+          else if(up.total.percent>=50 && !thumb_progress_elm.hasClass('p50')){
+            thumb_progress_elm.removeClass('p25');
+            thumb_progress_elm.addClass('p50');
+          }
+          else if(up.total.percent>=25 && !thumb_progress_elm.hasClass('p25')){
+            thumb_progress_elm.addClass('p25');
+          }
+          thumb_counter_elm.html(up.total.percent+'%');
         });
 
         // When the file was uploaded
@@ -378,12 +410,28 @@ $.fn.userphotouploader = function(options) {
 
         // Upload progress
         logo_uploader.bind('UploadProgress', function(up, file){
-          $('.new_photo_'+file.id+' .upload-progress>.fill').css('width', up.total.percent+'%');
-          if(up.total.percent==25 || up.total.percent==50 || up.total.percent==75 ||  up.total.percent==100){
-            $('.new_photo_'+file.id).removeClass('p25 p50 p75');
-            $('.new_photo_'+file.id+' .upload-progress').addClass('p'+up.total.percent);
+          var thumb = '.new_photo_'+file.id;
+          var thumb_progress = thumb+' .upload-progress';
+          var thumb_fill_elm = $(thumb_progress+'>.fill');
+          var thumb_progress_elm = $(thumb_progress);
+          var thumb_counter_elm = $(thumb+' .upload-counter');
+          thumb_fill_elm.css('width', up.total.percent+'%');
+          if(up.total.percent>=100 && !thumb_progress_elm.hasClass('p100')){
+            thumb_progress_elm.removeClass('p25 p50 p75');
+            thumb_progress_elm.addClass('p100');
           }
-          $('.new_photo_'+file.id+' .upload-counter').html(up.total.percent+'%');
+          else if(up.total.percent>=75 && !thumb_progress_elm.hasClass('p75')){
+            thumb_progress_elm.removeClass('p25 p50');
+            thumb_progress_elm.addClass('p75');
+          }
+          else if(up.total.percent>=50 && !thumb_progress_elm.hasClass('p50')){
+            thumb_progress_elm.removeClass('p25');
+            thumb_progress_elm.addClass('p50');
+          }
+          else if(up.total.percent>=25 && !thumb_progress_elm.hasClass('p25')){
+            thumb_progress_elm.addClass('p25');
+          }
+          thumb_counter_elm.html(up.total.percent+'%');
         });
 
         // When the file was uploaded
@@ -527,12 +575,28 @@ $.fn.accoladeuploader = function() {
 
         // Upload progress (not used at the moment)
         accolade_uploader.bind('UploadProgress', function(up, file){
-          $('.new_accolade_image_'+file.id+' .upload-progress>.fill').css('width', up.total.percent+'%');
-          if(up.total.percent==25 || up.total.percent==50 || up.total.percent==75 ||  up.total.percent==100){
-            $('.new_accolade_image_'+file.id).removeClass('p25 p50 p75');
-            $('.new_accolade_image_'+file.id+' .upload-progress').addClass('p'+up.total.percent);
+          var thumb = '.new_accolade_image_'+file.id;
+          var thumb_progress = thumb+' .upload-progress';
+          var thumb_fill_elm = $(thumb_progress+'>.fill');
+          var thumb_progress_elm = $(thumb_progress);
+          var thumb_counter_elm = $(thumb+' .upload-counter');
+          thumb_fill_elm.css('width', up.total.percent+'%');
+          if(up.total.percent>=100 && !thumb_progress_elm.hasClass('p100')){
+            thumb_progress_elm.removeClass('p25 p50 p75');
+            thumb_progress_elm.addClass('p100');
           }
-          $('.new_accolade_image_'+file.id+' .upload-counter').html(up.total.percent+'%');
+          else if(up.total.percent>=75 && !thumb_progress_elm.hasClass('p75')){
+            thumb_progress_elm.removeClass('p25 p50');
+            thumb_progress_elm.addClass('p75');
+          }
+          else if(up.total.percent>=50 && !thumb_progress_elm.hasClass('p50')){
+            thumb_progress_elm.removeClass('p25');
+            thumb_progress_elm.addClass('p50');
+          }
+          else if(up.total.percent>=25 && !thumb_progress_elm.hasClass('p25')){
+            thumb_progress_elm.addClass('p25');
+          }
+          thumb_counter_elm.html(up.total.percent+'%');
         });
 
         // When the file was uploaded
