@@ -60,8 +60,8 @@ $.fn.mediauploader = function() {
             elmBaseSettings["multipart_params"]["runtime"] = 'html4';
           }
           //--oldphone
-          // Max size 1200x1200px
-          elmBaseSettings["resize"]["width"] = "1200";
+          // Max size 1280x1200px
+          elmBaseSettings["resize"]["width"] = "1280";
           elmBaseSettings["resize"]["height"] = "1200";
 
           var uploader = new plupload.Uploader(elmBaseSettings);
@@ -86,6 +86,7 @@ $.fn.mediauploader = function() {
           });
 
           // Upload progress
+          var t = 0;
           uploader.bind('UploadProgress', function(up, file){
             var thumb = '.new_thumb_'+file.id;
             var thumb_progress = thumb+' .upload-progress';
@@ -96,6 +97,7 @@ $.fn.mediauploader = function() {
             if(file.percent>=100 && !thumb_progress_elm.hasClass('p100')){
               thumb_progress_elm.removeClass('p25 p50 p75');
               thumb_progress_elm.addClass('p100');
+              thumb_counter_elm.html(file.percent+'%');
             }
             else if(file.percent>=75 && !thumb_progress_elm.hasClass('p75')){
               thumb_progress_elm.removeClass('p25 p50');
@@ -108,7 +110,18 @@ $.fn.mediauploader = function() {
             else if(file.percent>=25 && !thumb_progress_elm.hasClass('p25')){
               thumb_progress_elm.addClass('p25');
             }
-            thumb_counter_elm.html(file.percent+'%');
+            if(file.percent>=100){
+              if(t<=0){
+                t = setTimeout(function(){
+                  if(file.percent==100 && thumb_counter_elm.length>0){
+                    thumb_counter_elm.html(file.percent+'%, crunching...');
+                  }
+                }, 1000);
+              }
+            }
+            else {
+              thumb_counter_elm.html(file.percent+'%');
+            }
           });
 
           // When the file was uploaded
@@ -133,6 +146,9 @@ $.fn.mediauploader = function() {
                 var json_response = JSON.parse(response["response"]);
                 if(json_response["status_code"]==1){
                   $('li.new_thumb_'+file.id, target).replaceWith(json_response["html"]);
+                  if(typeof(bind_promote_colorbox) == "function"){
+                    bind_promote_colorbox();
+                  }
                 }
                 else {
                   cmd.showError({'code':0, 'message':json_response["error"]});
@@ -722,46 +738,49 @@ function default_thumb_trash_action(){
     .off('click.mediauploader', '.thumb-trash')
     .on('click.mediauploader', '.thumb-trash', function(e) {
     e.preventDefault();
-    var container  = $('#delete-media-confirm');
-    var button     = $('.action-confirm', container);
-    var list       = $(this).closest('li');
-    var media_id   = list.attr('media-id');
-    var media_type = list.attr('media-type');
-    //var show_modal = true;
-    var on_showroom = false;
+    var list = $(this).closest('li');
+    if(list.attr('media-source')!='album-photo-container' && (!list.attr('taxonomy') || list.attr('taxonomy')=='')) {
+      var container = $('#delete-media-confirm');
+      var button = $('.action-confirm', container);
+      var media_id = list.attr('media-id');
+      var media_type = list.attr('media-type');
+      //var show_modal = true;
+      var on_showroom = false;
 
-    if($(this).closest('#toolbox-activity').length>0){
-      on_showroom = true;
-    }
-
-    // Show modal or alert? Depend on where we are now: project modal or not
-    // Nested modal workaround;
-    jQuery().modal.Constructor.prototype.enforceFocus = function(){};
-    container.modal();
-    container.removeAttr('style');
-    // If we are on showroom, give a little cleaner touch on nested modal
-    if(on_showroom){
-      container.css('z-index', 1051);
-      $('.modal-backdrop').last().css('z-index', 1050);
-    }
-    //--on-showroom
-    button.unbind('click').click(function(e) {
-      e.preventDefault();
-      if (!button.hasClass('disabled')) {
-        button.addClass('disabled');
-        confirm_delete_media(media_id, media_type, false, function() {
-          setTimeout(function(){
-            list.fadeOut(300, function() {
-              $(this).remove();
-            });
-          }, 600);
-          container.modal('hide');
-          button.removeClass('disabled');
-        }, function() {
-          button.removeClass('disabled');
-        });
+      if ($(this).closest('#toolbox-activity').length > 0) {
+        on_showroom = true;
       }
-    });
+
+      // Show modal or alert? Depend on where we are now: project modal or not
+      // Nested modal workaround;
+      jQuery().modal.Constructor.prototype.enforceFocus = function () {
+      };
+      container.modal();
+      container.removeAttr('style');
+      // If we are on showroom, give a little cleaner touch on nested modal
+      if (on_showroom) {
+        container.css('z-index', 1051);
+        $('.modal-backdrop').last().css('z-index', 1050);
+      }
+      //--on-showroom
+      button.unbind('click').click(function (e) {
+        e.preventDefault();
+        if (!button.hasClass('disabled')) {
+          button.addClass('disabled');
+          confirm_delete_media(media_id, media_type, false, function () {
+            setTimeout(function () {
+              list.fadeOut(300, function () {
+                $(this).remove();
+              });
+            }, 600);
+            container.modal('hide');
+            button.removeClass('disabled');
+          }, function () {
+            button.removeClass('disabled');
+          });
+        }
+      });
+    }
   });
 }
 

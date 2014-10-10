@@ -11,7 +11,7 @@
     <a href="" class="thumb-trash"><i class="icon-trash"></i></a>
   </span>
   <div class="media-controls touch-check-media <?=($media_type=="video")?"show-video-play":""?>">
-    <a href="<?=$template_params['attachment_large']?>" data-title="media-title-<?=$attachment_id?>" class="show-image colorbox-element" <?=($media_type=="video")?"data-video=\"1\"":""?> rel="gallery-<?=$attachment_id?>"><i class="<?=($media_type=="video")?"icon-media-play":"icon-media-expand"?>"></i></a>
+    <a href="<?=$template_params['attachment_large']?>" data-title="media-title-<?=$attachment_id?>" <?=($template_params['attachment_large']!='')?'class="show-image colorbox-element"':''?> <?=($media_type=="video")?"data-video=\"1\"":""?> rel="gallery-<?=$attachment_id?>"><i class="<?=($media_type=="video")?"icon-media-play":"icon-media-expand"?>"></i></a>
   </div>
   <div id="media-title-<?=$attachment_id?>" style="display:none;"><?=($template_params['media_caption']!='')?'<strong>'.$template_params['media_caption'].'</strong>':''?><?=($template_params['media_caption']!='' && $template_params['media_description']!='')?'<br />':''?><?=($template_params['media_description']!='')?$template_params['media_description']:''?></div>
   <div class="pull-right">

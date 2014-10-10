@@ -5,7 +5,7 @@
 ?>
 
 <li media-id="<?=$attachment_id?>" media-type="<?=$template_params['media_type']?>" media-caption="<?=$media_caption?>" media-description="<?=(isset($template_params['media_description']))?$template_params['media_description']:''?>">
-  <a href="#" class="thumbnail research-media">
+  <a href="<?=$template_params['attachment_large']?>" class="thumbnail research-media" <?=($media_type=="video")?"data-video=\"1\"":""?>>
     <img src="<?=$template_params['attachment_thumb']?>" id="thumb_<?=$attachment_id?>" class="fade in" />
     <?php
       if($template_params['media_type']=='photo'){

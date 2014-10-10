@@ -17,7 +17,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 class The_Media_Uploader {
   /* Global variables */
   static $default_max_upload_size = 5242880; // 5*1024*1024=5Mb
-  static $default_max_width = 1200;
+  static $default_max_width = 1280;
   static $default_max_height = 1200;
   static $default_image_quality = 100;
 
@@ -78,8 +78,8 @@ class The_Media_Uploader {
         'multiple_queues' => false,
         'max_file_size' => $settings["max_upload_size"].'b',
         'url' => admin_url('admin-ajax.php'),
-        'flash_swf_url' => plugins_url('media-uploader/plupload/plupload.flash.swf'),
-        'silverlight_xap_url' => plugins_url('media-uploader/plupload/plupload.silverlight.xap'),
+        'flash_swf_url' => plugins_url('media-uploader/plupload/plupload.flash.swf', __FILE__),
+        'silverlight_xap_url' => plugins_url('media-uploader/plupload/plupload.silverlight.xap', __FILE__),
         'filters' => array(array('title' => __('Image Files'), 'extensions' => "jpg,png,jpeg,gif")),
         'multipart' => true,
         'urlstream_upload' => true,
@@ -156,6 +156,8 @@ class The_Media_Uploader {
         $template_params['attachment_id'] = $attach_id;
         $template_params['attachment_thumb'] = wp_get_attachment_thumb_url($attach_id); // Get thumbnail url
         $template_params['media_type'] = "photo";
+        $media_attach = wp_get_attachment_image_src($attach_id, 'large');
+        $template_params['attachment_large'] = $media_attach[0];
         $image_src = wp_get_attachment_image_src($attach_id, 'full');
         apply_filters('tb_new_media', array(
           'type'  => $template_params['media_type'],
@@ -918,7 +920,7 @@ class The_Media_Uploader {
       }
     }
   }
-};
+}
 
 /**
  * Initialize The_Media_Uploader
