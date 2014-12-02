@@ -169,7 +169,7 @@ $.fn.mediauploader = function() {
       showError: function(error){
         var message = error.message;
         switch(error.code){
-          case -600: message = "File size too big.";
+          case -600: message = "File size too big. File must be less than 5MB.";
             break;
         }
         var target = $('#'+elmSettings.data_target_id);
@@ -337,7 +337,7 @@ $.fn.logouploader = function(options) {
       showError: function(error){
         var message = error;
         switch(error.code){
-          case -600: message = "File size too big.";
+          case -600: message = "File size too big. File must be less than 5MB.";
             break;
         }
         var target = $('#'+elmSettings.data_target_id);
