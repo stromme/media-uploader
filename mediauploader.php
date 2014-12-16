@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: The Media Uploader
-Plugin URI: http://www.uzbuz.com
+Plugin URI: http://www.hatchspot.com
 Description: Adds media uploader support to the front-end for themes.
 Version: 1.0
 Author: Josua Leonard
-Author URI: http://www.uzbuz.com
+Author URI: http://www.hatchspot.com
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
@@ -35,6 +35,7 @@ class The_Media_Uploader {
     add_action('wp_ajax_logo_plupload_action', array($this, 'g_logo_plupload_action'));
     add_action('wp_ajax_user_photo_plupload_action', array($this, 'g_user_photo_plupload_action'));
     add_action('wp_ajax_accolade_plupload_action', array($this, 'g_accolade_plupload_action'));
+    add_action('wp_ajax_attachment_plupload_action', array($this, 'g_attachment_plupload_action'));
     /* Used in toolbox manage media module */
     add_action('wp_ajax_delete_media', array($this, 'delete_media_callback'));
     add_action('wp_ajax_tag_media', array($this, 'tag_media_callback'));
@@ -448,6 +449,103 @@ class The_Media_Uploader {
   }
 
   /**
+   * Upload attachment for edit site
+   *
+   * @uses wp_handle_upload, wp_generate_attachment_metadata, wp_update_attachment_metadata, get_attachment_link, wp_get_image_editor, get_post_meta, wp_delete_attachment
+   * @action wp_ajax_attachment_plupload_action
+   * @return null
+   */
+  function g_attachment_plupload_action() {
+    // Globalize variable tobe able to access in the template
+    global $template_params;
+
+    $img_id  = $_POST["img_id"];
+    $template = (isset($_POST["template"]))?$_POST["template"]:'';
+
+    // Handle file upload
+    $status = wp_handle_upload($_FILES['file_'.$img_id], array('test_form' => false, 'action' => 'attachment_plupload_action'));
+
+    // If status is containing minimum 3 parameter: url, uri, and type
+    if(count($status)>2){
+      $file_url = $status["url"];
+      $wp_upload_dir = wp_upload_dir(); // Get the wp upload dir
+      $file = basename($file_url); // Grab just filename
+      $path = $wp_upload_dir['path'].'/'.$file; // Create URI
+
+      $is_image = (strstr($status['type'], 'image/'));
+      if($is_image){
+        // Fix image orientation
+        $this->image_fix_orientation($path);
+      }
+
+      $wp_filetype = wp_check_filetype($file); // Get MIME type
+      // Create attachment data
+      $attachment_data = array(
+        'guid' => $file_url,
+        'post_mime_type' => $wp_filetype['type'],
+        'post_title' => preg_replace('/\.[^.]+$/','', $file)
+      );
+      $attach_id = wp_insert_attachment($attachment_data, $path, 0);
+
+      if($is_image){
+        //Yes, you do "require" the following line of code
+        require_once(ABSPATH."wp-admin".'/includes/image.php');
+      }
+
+      $attach_data = wp_generate_attachment_metadata($attach_id, $path);
+      wp_update_attachment_metadata($attach_id,$attach_data);
+      $template_params['attachment_id'] = $attach_id;
+      $template_params['media_type'] = "document";
+      $template_params['attachment_thumb'] = TOOLBOX_IMAGES."/doc-default.jpg";
+      $template_params['filename'] = $file;
+      $template_params['attachment_large'] = $file_url;
+
+      $continue = true;
+      if($is_image) {
+        $image_size = getimagesize($path);
+        if($image_size[0]>=600 && $image_size[1]>=450){
+          $template_params['media_type'] = "image";
+          // Get permalink (in case needed), this also creates many file with various sizes
+          $template_params['attachment_thumb'] = wp_get_attachment_thumb_url($attach_id); // Get thumbnail url
+          $media_attach = wp_get_attachment_image_src($attach_id, 'large');
+          $template_params['attachment_large'] = $media_attach[0];
+        } else {
+          unlink($path);
+          $status["status_code"] = 0;
+          $status["error"] = ' Image needs to be at least 600x450 px, this image is '.$image_size[0].'x'.$image_size[1].' px.';
+          $continue = false;
+        }
+      }
+
+      if($continue){
+        // Redirect echo into string
+        ob_start();
+        // Load those variables into our template
+        load_template(plugin_dir_path(__FILE__).'templates/'.$template.'.php', true);
+        $string = ob_get_contents();
+        ob_end_clean();
+        $status["status_code"] = 1;
+        $status["html"] = $string;
+
+        $status["status_code"] = 1;
+        // Return new attachment ID
+        $status["id"] = $attach_id;
+      }
+
+      // Destroy used attachment variables
+      unset($attach_id, $attach_data, $attachment_data, $file, $path);
+    }
+    unset($status["file"]);
+    if(isset($_POST['runtime']) && $_POST['runtime']=='html4'){
+      $status = str_replace('src=', '_src_', json_encode($status));
+      $status = str_replace('<', '_lt_', $status);
+      echo str_replace('>', '_rt_', $status);
+    }
+    else echo json_encode($status);
+    exit;
+  }
+
+  /**
    * Shows admin menu for the media uploader
    *
    * @uses add_options_page
@@ -642,7 +740,7 @@ class The_Media_Uploader {
       if($can_delete){
         // Different type, different ways of deleting post.
         // Delete photo as an attachment so wp will remove all the images files
-        if($media_type=='photo'){
+        if($media_type=='photo' || $media_type=='image' || $media_type=='document'){
           $delete_status = wp_delete_attachment($media_id, true);
         }
         // Video is a post
