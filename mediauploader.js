@@ -130,7 +130,7 @@ $.fn.mediauploader = function() {
             if(typeof(response=="Object") && response.status==0){
               setTimeout(function(){
                 $('li.new_thumb_'+file.id, target).remove();
-                cmd.showError({'code':0, 'message':"Connection error"});
+                cmd.showError({'code':0, 'message':"Connection error."});
               }, 100);
             }
             else {
@@ -155,7 +155,7 @@ $.fn.mediauploader = function() {
                   $('li.new_thumb_'+file.id, target).fadeOut(500, function(){$(this).remove();});
                 }
               //} catch (e) {
-                bootstrap_alert('Connection error', 'error');
+                //bootstrap_alert('Connection error', 'error');
               //}
             }
           });
