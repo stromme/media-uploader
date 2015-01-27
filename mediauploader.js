@@ -134,7 +134,7 @@ $.fn.mediauploader = function() {
               }, 100);
             }
             else {
-              try {
+              //try {
                 // For HTML4 runtime, because it reads rendered html content
                 if(elmBaseSettings["multipart_params"]["runtime"]=='html4'){
                   response["response"] = response["response"].replace(/_lt_/g, '<');
@@ -154,9 +154,9 @@ $.fn.mediauploader = function() {
                   cmd.showError({'code':0, 'message':json_response["error"]});
                   $('li.new_thumb_'+file.id, target).fadeOut(500, function(){$(this).remove();});
                 }
-              } catch (e) {
+              //} catch (e) {
                 bootstrap_alert('Connection error', 'error');
-              }
+              //}
             }
           });
 
