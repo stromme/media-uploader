@@ -16,7 +16,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 class The_Media_Uploader {
   /* Global variables */
-  static $default_max_upload_size = 5242880; // 5*1024*1024=5Mb
+  static $default_max_upload_size = 10242880; // 5*1024*1024=5Mb
   static $default_max_width = 1280;
   static $default_max_height = 1200;
   static $default_image_quality = 100;
