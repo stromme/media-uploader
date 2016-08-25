@@ -236,7 +236,7 @@ class The_Media_Uploader {
         // Get permalink (in case needed), this also creates many file with various sizes
         $image = wp_get_image_editor($status["file"]); // Return an implementation that extends <tt>WP_Image_Editor</tt>
         if(!is_wp_error($image)){
-          $image->resize(300, 200, false); //abstract public function resize( $max_w, $max_h, $crop = false );
+          $image->resize(600, 400, false); //abstract public function resize( $max_w, $max_h, $crop = false );
           $image->save($status["file"]);
         }
 
@@ -264,8 +264,8 @@ class The_Media_Uploader {
 
         // Set it as custom header image
         $args = array(
-          'width'         => 300,
-          'height'        => 200,
+          'width'         => 600,
+          'height'        => 400,
           'default-image' => $status["url"],
           'thumbnail_url' => $status['url'],
           'url'           => $status['url'],
